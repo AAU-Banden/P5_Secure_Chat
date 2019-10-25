@@ -11,7 +11,7 @@
         android:layout_weight="1"
         android:textColorHint="#CFD8DC"
         android:textColor="#CFD8DC"
-        android:hint="@string/write_a_message"
+        android:hint="write_a_message"
         android:id="@+id/messageArea"
         android:maxHeight="80dp"
         />
