@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">P5_secure_chatting</string>
+    <string name="app_name">P5_Secure_Chat</string>
+    <string name="login">Login</string>
+    <string name="textview_description">Login or create an account to begin messaging your friends</string>
+    <string name="password">password</string>
+    <string name="phonenumber">phonenumber</string>
 </resources>
