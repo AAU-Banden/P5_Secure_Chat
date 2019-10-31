@@ -18,12 +18,12 @@
         android:textAllCaps="false"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/editText_password"
+        app:layout_constraintEnd_toEndOf="@+id/editText_passwordLogin"
         app:layout_constraintHorizontal_bias="0.496"
-        app:layout_constraintStart_toStartOf="@+id/editText_password" />
+        app:layout_constraintStart_toStartOf="@+id/editText_passwordLogin" />
 
     <EditText
-        android:id="@+id/editText_phoneNumber"
+        android:id="@+id/editText_phoneNumberLogin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
@@ -31,12 +31,12 @@
         android:ems="10"
         android:hint="@string/phonenumber"
         android:inputType="phone"
-        app:layout_constraintBottom_toTopOf="@+id/editText_password"
+        app:layout_constraintBottom_toTopOf="@+id/editText_passwordLogin"
         app:layout_constraintEnd_toEndOf="@+id/textView_description"
         app:layout_constraintStart_toStartOf="@+id/textView_description" />
 
     <EditText
-        android:id="@+id/editText_password"
+        android:id="@+id/editText_passwordLogin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="36dp"
@@ -45,9 +45,9 @@
         android:hint="@string/password"
         android:inputType="textPassword"
         app:layout_constraintBottom_toTopOf="@+id/button_login"
-        app:layout_constraintEnd_toEndOf="@+id/editText_phoneNumber"
+        app:layout_constraintEnd_toEndOf="@+id/editText_phoneNumberLogin"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/editText_phoneNumber" />
+        app:layout_constraintStart_toStartOf="@+id/editText_phoneNumberLogin" />
 
     <TextView
         android:id="@+id/textView_description"
@@ -59,7 +59,7 @@
         android:textAlignment="viewStart"
         android:textAllCaps="false"
         android:textSize="24sp"
-        app:layout_constraintBottom_toTopOf="@+id/editText_phoneNumber"
+        app:layout_constraintBottom_toTopOf="@+id/editText_phoneNumberLogin"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"

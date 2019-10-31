@@ -33,14 +33,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/null_string"
-        app:layout_constraintBottom_toTopOf="@+id/editText5"
+        app:layout_constraintBottom_toTopOf="@+id/editText_createPassword"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:visibility="invisible" />
 
     <EditText
-        android:id="@+id/editText5"
+        android:id="@+id/editText_createPassword"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="124dp"
@@ -49,13 +49,13 @@
         android:hint="@string/password"
         android:importantForAutofill="no"
         android:inputType="textPassword"
-        app:layout_constraintBottom_toTopOf="@+id/editText6"
+        app:layout_constraintBottom_toTopOf="@+id/editText_confirmPassword"
         app:layout_constraintEnd_toEndOf="@+id/textView_email"
         app:layout_constraintStart_toStartOf="@+id/textView_full_name"
         app:layout_constraintTop_toBottomOf="@+id/textView_email" />
 
     <EditText
-        android:id="@+id/editText6"
+        android:id="@+id/editText_confirmPassword"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="46dp"
@@ -65,10 +65,10 @@
         android:importantForAutofill="no"
         android:inputType="textPassword"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/editText5"
+        app:layout_constraintEnd_toEndOf="@+id/editText_createPassword"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/editText5"
-        app:layout_constraintTop_toBottomOf="@+id/editText5" />
+        app:layout_constraintStart_toStartOf="@+id/editText_createPassword"
+        app:layout_constraintTop_toBottomOf="@+id/editText_createPassword" />
 
     <Button
         android:id="@+id/button_createAccount"
@@ -79,7 +79,7 @@
         android:textAllCaps="false"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/editText6"
-        app:layout_constraintStart_toStartOf="@+id/editText6"
-        app:layout_constraintTop_toBottomOf="@+id/editText6" />
+        app:layout_constraintEnd_toEndOf="@+id/editText_confirmPassword"
+        app:layout_constraintStart_toStartOf="@+id/editText_confirmPassword"
+        app:layout_constraintTop_toBottomOf="@+id/editText_confirmPassword" />
 </androidx.constraintlayout.widget.ConstraintLayout>

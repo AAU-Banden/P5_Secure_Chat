@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "42146979404",
+    "firebase_url": "https://p5-chat-nibba.firebaseio.com",
+    "project_id": "p5-chat-nibba",
+    "storage_bucket": "p5-chat-nibba.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:42146979404:android:e8f1c733209541f12b5ee9",
+        "android_client_info": {
+          "package_name": "aau.itcom.group_2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "42146979404-o3tjf8oll3497ahmnh45kar4f8rq0okn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXKUOtpvxgBQ64zpMGaYmGDgxNjY9Zr4M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "42146979404-o3tjf8oll3497ahmnh45kar4f8rq0okn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -23,7 +23,8 @@ public class CreateAccountActivity extends AppCompatActivity {
         final EditText firstNameEdit = findViewById(R.id.editText_firstName);
         final EditText lastNameEdit = findViewById(R.id.editText_lastName);
         final EditText emailEdit = findViewById(R.id.editText_email);
-        final EditText phoneNumberEdit = findViewById(R.id.editText_phoneNumber);
+        final EditText phoneNumberEdit = findViewById(R.id.editText_phoneNumberLogin);
+
 
 
 
@@ -37,13 +38,19 @@ public class CreateAccountActivity extends AppCompatActivity {
                 email = emailEdit.getText().toString();
                 /*
                 TO DO:
-                Email should be checked for correct
+                Email should be checked for correct formalia
                  */
                 phoneNumber = phoneNumberEdit.getText().toString();
 
-
-
+                Bundle bundle = new Bundle();
+                bundle.putString("FIRST_NAME", firstName);
+                bundle.putString("LAST_NAME", lastName);
+                bundle.putString("EMAIL", email);
+                bundle.putString("PHONE_NUMBER", phoneNumber);
+                myIntent.putExtras(bundle);
                 startActivity(myIntent);
+
+
             }
         });
 

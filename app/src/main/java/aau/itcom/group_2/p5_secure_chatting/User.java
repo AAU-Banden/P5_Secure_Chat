@@ -7,24 +7,18 @@ public class User {
     private String phoneNumber;
     private String password;
     private String ID;
+    private boolean isLoggedIn;
 
 
 
-    public User(String name, String lastName, String phoneNumber, String password, String ID) {
-        this.name = name;
-        this.lastName = lastName;
-        this.phoneNumber = phoneNumber;
-        this.password = password;
-        this.ID = ID;
-    }
 
-
-    public User(String name, String lastName, String email, String phoneNumber, String password, String ID) {
+    public User(String name, String lastName, String email, String phoneNumber, String password, boolean isLoggedIn, String ID) {
         this.name = name;
         this.lastName = lastName;
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.password = password;
+        this.isLoggedIn = isLoggedIn;
         this.ID = ID;
     }
 
@@ -75,5 +69,13 @@ public class User {
 
     public void setID(String ID) {
         this.ID = ID;
+    }
+
+    public boolean isLoggedIn() {
+        return isLoggedIn;
+    }
+
+    public void setLoggedIn(boolean loggedIn) {
+        isLoggedIn = loggedIn;
     }
 }
