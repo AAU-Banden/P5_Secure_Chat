@@ -23,7 +23,7 @@ public class CreateAccountActivity extends AppCompatActivity {
         final EditText firstNameEdit = findViewById(R.id.editText_firstName);
         final EditText lastNameEdit = findViewById(R.id.editText_lastName);
         final EditText emailEdit = findViewById(R.id.editText_email);
-        final EditText phoneNumberEdit = findViewById(R.id.editText_phoneNumberLogin);
+        final EditText phoneNumberEdit = findViewById(R.id.editText_emailLogin);
 
 
 

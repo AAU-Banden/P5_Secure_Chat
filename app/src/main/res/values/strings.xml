@@ -12,4 +12,5 @@
     <string name="confirm_password">Confirm Password</string>
     <string name="null_string">null</string>
     <string name="create_account">Create Account</string>
+    <string name="email">Email</string>
 </resources>

@@ -51,7 +51,7 @@ public class CreateAccountPage2Activity extends AppCompatActivity {
         final EditText confirmPassword = findViewById(R.id.editText_confirmPassword);
 
 
-        /**
+        /*
          * Getting information from previous activity.
          */
         Bundle extras = intent.getExtras();
@@ -89,10 +89,11 @@ public class CreateAccountPage2Activity extends AppCompatActivity {
 
     /**
      * Creating Firebase User - Method more or less taken from Firebase documentation
-     * @param email
-     * @param password
+     * @param email email from edit
+     * @param password pass from edit
      */
     private void createFirebaseUser (String email, String password){
+        Log.i(TAG, email + " " + password);
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -118,13 +119,13 @@ public class CreateAccountPage2Activity extends AppCompatActivity {
 
     /**
      * Adding user into database with all user data.
-     * @param firebaseUser
+     * @param firebaseUser fb
      *
      */
     private void onAuthSuccess(FirebaseUser firebaseUser) {
         // Write new user
         id = firebaseUser.getUid();
-        user = new User (firstName, lastName, phoneNumber, email, passwordStr, false, id);
+        user = new User (firstName, lastName, email , phoneNumber, passwordStr, false, id);
         databaseReference.child("users").child(id).setValue(user);
         // Go to MainActivity
         intent = new Intent (this, LoginActivity.class);

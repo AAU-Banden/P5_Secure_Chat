@@ -39,7 +39,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         intent = getIntent();
-        editTextPhoneOrEmail = findViewById(R.id.editText_phoneNumberLogin);
+        editTextPhoneOrEmail = findViewById(R.id.editText_emailLogin);
         editTextPassword = findViewById(R.id.editText_passwordLogin);
 
         phoneOrEmail = getIntent().getStringExtra(EXTRA_ID);
@@ -48,8 +48,7 @@ public class LoginActivity extends AppCompatActivity {
 
 
 
-        phoneOrEmail = editTextPhoneOrEmail.getText().toString();
-        password = editTextPassword.getText().toString();
+
 
 
         //Firebase
@@ -69,7 +68,9 @@ public class LoginActivity extends AppCompatActivity {
                  * Include some code that can check whether a user enters email or phone.
                  */
 
-
+                phoneOrEmail = editTextPhoneOrEmail.getText().toString();
+                password = editTextPassword.getText().toString();
+                Log.i(TAG, phoneOrEmail + " " +  password);
                 loginWithEmail(phoneOrEmail, password);
                 startActivity(intent);
             }

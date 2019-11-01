@@ -42,12 +42,12 @@
         android:ems="10"
         android:hint="@string/example_mail_com"
         android:inputType="textEmailAddress"
-        app:layout_constraintBottom_toTopOf="@+id/editText_phoneNumberLogin"
+        app:layout_constraintBottom_toTopOf="@+id/editText_emailLogin"
         app:layout_constraintEnd_toEndOf="@+id/editText_lastName"
         app:layout_constraintStart_toStartOf="@+id/editText_lastName" />
 
     <EditText
-        android:id="@+id/editText_phoneNumberLogin"
+        android:id="@+id/phoneNumber"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="232dp"
@@ -82,8 +82,8 @@
         android:textAllCaps="false"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/editText_phoneNumberLogin"
-        app:layout_constraintStart_toStartOf="@+id/editText_phoneNumberLogin"
-        app:layout_constraintTop_toBottomOf="@+id/editText_phoneNumberLogin" />
+        app:layout_constraintEnd_toEndOf="@+id/phoneNumber"
+        app:layout_constraintStart_toStartOf="@+id/phoneNumber"
+        app:layout_constraintTop_toBottomOf="@id/phoneNumber" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
