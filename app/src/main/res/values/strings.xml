@@ -3,11 +3,11 @@
     <string name="login">Login</string>
     <string name="textview_description">Login or create an account to begin messaging your friends</string>
     <string name="password">Password</string>
-    <string name="phonenumber">Phone number</string>
+    <string name="phonenumber">Phone number (optional)</string>
     <string name="sign_up">Sign up</string>
     <string name="first_name">First name</string>
     <string name="last_name">Last Name</string>
-    <string name="example_mail_com">Email (optional)</string>
+    <string name="example_mail_com">Email</string>
     <string name="next_button">Next</string>
     <string name="confirm_password">Confirm Password</string>
     <string name="null_string">null</string>

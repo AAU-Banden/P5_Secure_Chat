@@ -3,6 +3,7 @@ package aau.itcom.group_2.p5_secure_chatting;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -33,22 +34,35 @@ public class CreateAccountPage2Activity extends AppCompatActivity {
     String id;
     User user;
     Intent intent;
+    EditText editPassword;
+    EditText editConfirmPassword;
+
+
+    Context context;
+    Toast wrongPasswordToast;
+    CharSequence passwordNotMatching = "Passwords are not matching...";
+    int toastDuration = Toast.LENGTH_SHORT;
+
+
+
+
 
     String TAG = "CREATE ACCOUNT";
 
-    private FirebaseAuth mAuth;
-    private FirebaseDatabase database;
-    private DatabaseReference databaseReference;
+    FirebaseAuth mAuth;
+    FirebaseDatabase database;
+    DatabaseReference databaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_account_page2);
+        context = getApplicationContext();
 
         Intent intent = getIntent();
 
-        final EditText password = findViewById(R.id.editText_createPassword);
-        final EditText confirmPassword = findViewById(R.id.editText_confirmPassword);
+        editPassword = findViewById(R.id.editText_createPassword);
+        editConfirmPassword = findViewById(R.id.editText_confirmPassword);
 
 
         /*
@@ -71,18 +85,24 @@ public class CreateAccountPage2Activity extends AppCompatActivity {
 
 
 
-        final Button createButton = findViewById(R.id.button_createAccount);
-        createButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                Log.i(TAG, "EMAIL: " + email);
-                passwordStr = password.getText().toString();
-                confirmPasswordStr = confirmPassword.getText().toString();
-                createFirebaseUser(email, passwordStr);
+
+    }
+
+    public void createButtonClicked (View view){
+        Log.i(TAG, "EMAIL: " + email);
+        passwordStr = editPassword.getText().toString();
+        confirmPasswordStr = editConfirmPassword.getText().toString();
+        wrongPasswordToast = Toast.makeText(context, passwordNotMatching, toastDuration);
 
 
-            }
-        });
-
+        if (!passwordStr.equals(confirmPasswordStr)) {
+            editPassword.setError("Passwords doesn't match.");
+            wrongPasswordToast.show();
+        }else if (passwordStr.length() < 6 ){
+            editPassword.setError("Password must contain at least 6 characters.");
+        }else {
+            createFirebaseUser(email, passwordStr);
+        }
 
     }
 
@@ -101,7 +121,9 @@ public class CreateAccountPage2Activity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "createUserWithEmail:success");
+
                             onAuthSuccess(task.getResult().getUser());
+
                             // signing out so it doesn't think a user is logged in...
                             mAuth.signOut();
                         } else {

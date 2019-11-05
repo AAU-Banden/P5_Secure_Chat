@@ -78,6 +78,7 @@
         android:text="@string/create_account"
         android:textAllCaps="false"
         android:textSize="18sp"
+        android:onClick="createButtonClicked"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/editText_confirmPassword"
         app:layout_constraintStart_toStartOf="@+id/editText_confirmPassword"

@@ -37,17 +37,18 @@
         android:id="@+id/editText_email"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="28dp"
         android:autofillHints=""
         android:ems="10"
         android:hint="@string/example_mail_com"
         android:inputType="textEmailAddress"
-        app:layout_constraintBottom_toTopOf="@+id/editText_emailLogin"
+        app:layout_constraintBottom_toTopOf="@+id/editText_phoneNumber"
         app:layout_constraintEnd_toEndOf="@+id/editText_lastName"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="@+id/editText_lastName" />
 
     <EditText
-        android:id="@+id/phoneNumber"
+        android:id="@+id/editText_phoneNumber"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="232dp"
@@ -81,9 +82,10 @@
         android:text="@string/next_button"
         android:textAllCaps="false"
         android:textSize="18sp"
+        android:onClick="nextButtonClicked"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/phoneNumber"
-        app:layout_constraintStart_toStartOf="@+id/phoneNumber"
-        app:layout_constraintTop_toBottomOf="@id/phoneNumber" />
+        app:layout_constraintEnd_toEndOf="@+id/editText_phoneNumber"
+        app:layout_constraintStart_toStartOf="@+id/editText_phoneNumber"
+        app:layout_constraintTop_toBottomOf="@id/editText_phoneNumber" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
