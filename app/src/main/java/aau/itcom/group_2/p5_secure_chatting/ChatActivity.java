@@ -1,11 +1,13 @@
 package aau.itcom.group_2.p5_secure_chatting;
 
+import android.graphics.Color;
 import android.os.Bundle;
 
 import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -110,6 +112,8 @@ public class ChatActivity extends AppCompatActivity {
     public void addMessageBox(String message, int type){
         TextView textView = new TextView(ChatActivity.this);
         textView.setText(message);
+        textView.setTextColor(Color.WHITE);
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 25);
 
         LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         lp2.weight = 7.0f;
@@ -117,15 +121,11 @@ public class ChatActivity extends AppCompatActivity {
         if(type == 1) {
             lp2.gravity = Gravity.LEFT;
             textView.setBackgroundResource(R.drawable.bubble_in);
-            /*textView.setTextColor(R.drawable.bubble_in);
-            textView.setTextSize(R.drawable.bubble_in);*/
+
         }
         else{
             lp2.gravity = Gravity.RIGHT;
             textView.setBackgroundResource(R.drawable.bubble_out);
-            /*textView.setTextColor(R.drawable.bubble_out);
-            textView.setTextSize(R.drawable.bubble_out);*/
-
 
         }
         textView.setLayoutParams(lp2);
