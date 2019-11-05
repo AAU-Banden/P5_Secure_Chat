@@ -1,10 +1,11 @@
 package aau.itcom.group_2.p5_secure_chatting;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+
+import com.firebase.client.ChildEventListener;
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.Firebase;
+
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,8 +18,11 @@ import android.widget.TextView;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
-public class Chat extends AppCompatActivity {
+import androidx.appcompat.app.AppCompatActivity;
+
+public class ChatActivity extends AppCompatActivity {
     LinearLayout layout;
     RelativeLayout layout_2;
     ImageView sendButton;
@@ -38,8 +42,10 @@ public class Chat extends AppCompatActivity {
         scrollView = findViewById(R.id.scrollView);
 
         Firebase.setAndroidContext(this);
-        reference1 = new Firebase("https://chatapp-60323.firebaseio.com/messages/" + "Lasse" + "_" + "Anton");
-        reference2 = new Firebase("https://chatapp-60323.firebaseio.com/messages/" + "Anton" + "_" + "Lasse");
+
+
+        reference1 = new Firebase("https://p5-chat-nibba.firebaseio.com/" + "Lasse" + "_" + "Anton");
+        reference2 = new Firebase("https://p5-chat-nibba.firebaseio.com/" + "Anton" + "_" + "Lasse");
 
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -49,6 +55,7 @@ public class Chat extends AppCompatActivity {
                 if(!messageText.equals("")){
                     Map<String, String> map = new HashMap<String, String>();
                     map.put("message", messageText);
+                                    //Dit navn
                     map.put("user", "Lasse");
                     reference1.push().setValue(map);
                     reference2.push().setValue(map);
@@ -61,10 +68,11 @@ public class Chat extends AppCompatActivity {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 Map map = dataSnapshot.getValue(Map.class);
-                String message = map.get("message").toString();
-                String userName = map.get("user").toString();
+                String message = Objects.requireNonNull(map.get("message")).toString();
+                String userName = Objects.requireNonNull(map.get("user")).toString();
 
-                if(userName.equals("Lasse")){
+                                //Modtagerens navn
+                if(userName.equals("Anton")){
                     addMessageBox(message, 1);
                 }
                 else{
@@ -88,14 +96,19 @@ public class Chat extends AppCompatActivity {
             }
 
             @Override
-            public void onCancelled(FirebaseError firebaseError) {
+            public void onCancelled(com.firebase.client.FirebaseError firebaseError) {
 
             }
+
+            /*@Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }*/
         });
     }
 
     public void addMessageBox(String message, int type){
-        TextView textView = new TextView(Chat.this);
+        TextView textView = new TextView(ChatActivity.this);
         textView.setText(message);
 
         LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -103,11 +116,17 @@ public class Chat extends AppCompatActivity {
 
         if(type == 1) {
             lp2.gravity = Gravity.LEFT;
-            //textView.setBackgroundResource(R.drawable.bubble_in);
+            textView.setBackgroundResource(R.drawable.bubble_in);
+            /*textView.setTextColor(R.drawable.bubble_in);
+            textView.setTextSize(R.drawable.bubble_in);*/
         }
         else{
             lp2.gravity = Gravity.RIGHT;
-            //textView.setBackgroundResource(R.drawable.bubble_out);
+            textView.setBackgroundResource(R.drawable.bubble_out);
+            /*textView.setTextColor(R.drawable.bubble_out);
+            textView.setTextSize(R.drawable.bubble_out);*/
+
+
         }
         textView.setLayoutParams(lp2);
         layout.addView(textView);

@@ -12,8 +12,10 @@
         android:fullBackupContent="@xml/backup_descriptor">
         <activity android:name=".LoginActivity"/>
         <activity android:name=".CreateAccountActivity" />
-        <activity android:name=".MainActivity">
-            <intent-filter>
+        <activity android:name=".MainActivity"/>
+        <activity android:name=".ChatActivity">
+
+        <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
