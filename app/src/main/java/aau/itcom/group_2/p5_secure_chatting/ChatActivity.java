@@ -6,7 +6,10 @@ import android.os.Bundle;
 import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
 
+import android.os.UserHandle;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -31,6 +34,7 @@ public class ChatActivity extends AppCompatActivity {
     EditText messageArea;
     ScrollView scrollView;
     Firebase reference1, reference2;
+    FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,10 +48,11 @@ public class ChatActivity extends AppCompatActivity {
         scrollView = findViewById(R.id.scrollView);
 
         Firebase.setAndroidContext(this);
+        mAuth = FirebaseAuth.getInstance();
 
 
-        reference1 = new Firebase("https://p5-chat-nibba.firebaseio.com/" + "Lasse" + "_" + "Anton");
-        reference2 = new Firebase("https://p5-chat-nibba.firebaseio.com/" + "Anton" + "_" + "Lasse");
+        reference1 = new Firebase("https://p5-chat-nibba.firebaseio.com/" + "Me" + "_" + "Anton");
+        reference2 = new Firebase("https://p5-chat-nibba.firebaseio.com/" + "Anton" + "_" + "Me");
 
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -58,7 +63,7 @@ public class ChatActivity extends AppCompatActivity {
                     Map<String, String> map = new HashMap<String, String>();
                     map.put("message", messageText);
                                     //Dit navn
-                    map.put("user", "Lasse");
+                    map.put("user", mAuth.getUid());
                     reference1.push().setValue(map);
                     reference2.push().setValue(map);
                     messageArea.setText("");
@@ -74,7 +79,7 @@ public class ChatActivity extends AppCompatActivity {
                 String userName = Objects.requireNonNull(map.get("user")).toString();
 
                                 //Modtagerens navn
-                if(userName.equals("Anton")){
+                if(!userName.equals(mAuth.getUid())){
                     addMessageBox(message, 1);
                 }
                 else{
