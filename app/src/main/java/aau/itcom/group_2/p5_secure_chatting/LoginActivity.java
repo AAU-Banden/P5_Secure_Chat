@@ -26,6 +26,7 @@ public class LoginActivity extends AppCompatActivity {
     String phoneOrEmail;
     String password;
     Intent intent;
+    Intent intentChat;
     EditText editTextPhoneOrEmail;
     EditText editTextPassword;
     FirebaseUser firebaseUser;
@@ -99,6 +100,7 @@ public class LoginActivity extends AppCompatActivity {
 
 
     public void loginWithEmail(String email, String password){
+        intentChat = new Intent(LoginActivity.this, ChatActivity.class);
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -108,7 +110,7 @@ public class LoginActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithEmail:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-                            startActivity(intent);
+                            startActivity(intentChat);
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithEmail:failure", task.getException());
