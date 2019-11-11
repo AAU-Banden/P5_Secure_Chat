@@ -118,7 +118,9 @@ public class ChatActivity extends AppCompatActivity {
         TextView textView = new TextView(ChatActivity.this);
         textView.setText(message);
         textView.setTextColor(Color.WHITE);
-        textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 25);
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+        textView.setPadding(30,18,30,20);
+
 
         LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         lp2.weight = 7.0f;
