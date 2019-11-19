@@ -100,7 +100,7 @@ public class LoginActivity extends AppCompatActivity {
 
 
     public void loginWithEmail(String email, String password){
-        intentChat = new Intent(LoginActivity.this, ChatActivity.class);
+        intentChat = new Intent(LoginActivity.this, MenuActivity.class);
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
