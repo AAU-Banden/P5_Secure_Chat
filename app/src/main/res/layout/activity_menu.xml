@@ -9,7 +9,7 @@ tools:context=".MenuActivity">
     <Button
         android:id="@+id/chat1"
         android:layout_width="wrap_content"
-        android:layout_height="48dp"
+        android:layout_height="50dp"
         android:onClick="chatButtonClicked"
         android:text="chat1"
         tools:layout_editor_absoluteX="35dp"
