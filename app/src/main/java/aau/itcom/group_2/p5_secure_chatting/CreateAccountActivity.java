@@ -1,5 +1,6 @@
 package aau.itcom.group_2.p5_secure_chatting;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
@@ -34,6 +35,11 @@ public class CreateAccountActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_account);
+
+        ActionBar actionBar = getSupportActionBar();
+        assert actionBar != null;
+        actionBar.setTitle("CreateAccountActivity");
+
         context = getApplicationContext();
 
         firstNameEdit = findViewById(R.id.editText_firstName);

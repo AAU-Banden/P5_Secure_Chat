@@ -1,6 +1,7 @@
 package aau.itcom.group_2.p5_secure_chatting;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
@@ -25,8 +26,9 @@ public class LoginActivity extends AppCompatActivity {
     String EXTRA_ID = "emailID";
     String phoneOrEmail;
     String password;
+    String user, pass;
     Intent intent;
-    Intent intentChat;
+    Intent intentListUser;
     EditText editTextPhoneOrEmail;
     EditText editTextPassword;
     FirebaseUser firebaseUser;
@@ -46,6 +48,11 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        ActionBar actionBar = getSupportActionBar();
+        assert actionBar != null;
+        actionBar.setTitle("LoginActivity");
+
         context = getApplicationContext();
         intent = getIntent();
         editTextPhoneOrEmail = findViewById(R.id.editText_emailLogin);
@@ -100,7 +107,7 @@ public class LoginActivity extends AppCompatActivity {
 
 
     public void loginWithEmail(String email, String password){
-        intentChat = new Intent(LoginActivity.this, MenuActivity.class);
+        intentListUser = new Intent(LoginActivity.this, ListUsersActivity.class);
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -109,8 +116,14 @@ public class LoginActivity extends AppCompatActivity {
                             intent = new Intent(LoginActivity.this, MainActivity.class);
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithEmail:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            startActivity(intentChat);
+                            user = mAuth.getUid();
+                            //username = findViewById(R.id.username);
+                            //password = findViewById(R.id.editText_passwordLogin);
+                            //user = editTextPhoneOrEmail.getText().toString();
+                            pass = editTextPassword.getText().toString();
+                            UserDetails.userId = user;
+                            UserDetails.password = pass;
+                            startActivity(intentListUser);
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithEmail:failure", task.getException());

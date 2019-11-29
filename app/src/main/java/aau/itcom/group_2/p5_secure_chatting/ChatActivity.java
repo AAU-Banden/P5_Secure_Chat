@@ -1,5 +1,6 @@
 package aau.itcom.group_2.p5_secure_chatting;
 
+import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.os.Bundle;
 
@@ -14,6 +15,7 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -25,6 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class ChatActivity extends AppCompatActivity {
@@ -35,11 +38,17 @@ public class ChatActivity extends AppCompatActivity {
     ScrollView scrollView;
     Firebase reference1, reference2;
     FirebaseAuth mAuth;
+    ProgressDialog pd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
+        ActionBar actionBar = getSupportActionBar();
+        assert actionBar != null;
+        actionBar.setTitle("ChatActivity");
 
         layout = findViewById(R.id.layout1);
         layout_2 = findViewById(R.id.layout2);
@@ -51,8 +60,8 @@ public class ChatActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
 
-        reference1 = new Firebase("https://p5-chat-nibba.firebaseio.com/" + "Me" + "_" + "Anton");
-        reference2 = new Firebase("https://p5-chat-nibba.firebaseio.com/" + "Anton" + "_" + "Me");
+        reference1 = new Firebase("https://p5-chat-nibba.firebaseio.com/" + UserDetails.username + "_" + UserDetails.chatWith);
+        reference2 = new Firebase("https://p5-chat-nibba.firebaseio.com/" + UserDetails.chatWith + "_" + UserDetails.username);
 
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,16 +69,20 @@ public class ChatActivity extends AppCompatActivity {
                 String messageText = messageArea.getText().toString();
 
                 if(!messageText.equals("")){
-                    Map<String, String> map = new HashMap<String, String>();
+                    Map<String, String> map = new HashMap<>();
                     map.put("message", messageText);
                                     //Dit navn
-                    map.put("user", mAuth.getUid());
+                    map.put("user", UserDetails.username);
                     reference1.push().setValue(map);
                     reference2.push().setValue(map);
                     messageArea.setText("");
                 }
             }
         });
+
+        pd = new ProgressDialog(ChatActivity.this);
+        pd.setMessage("Loading...");
+        pd.show();
 
         reference1.addChildEventListener(new ChildEventListener() {
             @Override
@@ -78,13 +91,16 @@ public class ChatActivity extends AppCompatActivity {
                 String message = Objects.requireNonNull(map.get("message")).toString();
                 String userName = Objects.requireNonNull(map.get("user")).toString();
 
-                                //Modtagerens navn
-                if(!userName.equals(mAuth.getUid())){
+
+
+                //Modtagerens navn
+                if(!userName.equals(UserDetails.username)){
                     addMessageBox(message, 1);
                 }
                 else{
                     addMessageBox(message, 2);
                 }
+                pd.dismiss();
             }
 
             @Override
@@ -126,12 +142,12 @@ public class ChatActivity extends AppCompatActivity {
         lp2.weight = 7.0f;
 
         if(type == 1) {
-            lp2.gravity = Gravity.LEFT;
+            lp2.gravity = Gravity.START;
             textView.setBackgroundResource(R.drawable.bubble_in);
 
         }
         else{
-            lp2.gravity = Gravity.RIGHT;
+            lp2.gravity = Gravity.END;
             textView.setBackgroundResource(R.drawable.bubble_out);
 
         }
