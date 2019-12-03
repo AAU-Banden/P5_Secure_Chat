@@ -12,5 +12,9 @@
     <string name="confirm_password">Confirm Password</string>
     <string name="null_string">null</string>
     <string name="create_account">Create Account</string>
+    <string name="no_users_found">No Users Found</string>
+    <string name="add_friends">Add friends</string>
+    <string name="current_conversations">Current conversations</string>
     <string name="email">Email</string>
+    <string name="textview">TextView</string>
 </resources>
