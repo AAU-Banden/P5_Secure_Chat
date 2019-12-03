@@ -1,5 +1,6 @@
 package aau.itcom.group_2.p5_secure_chatting;
 
+import aau.itcom.group_2.p5_secure_chatting.create_account.CreateAccountActivity;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,7 +10,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 

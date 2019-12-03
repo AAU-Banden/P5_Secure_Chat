@@ -3,6 +3,7 @@
     package="aau.itcom.group_2.p5_secure_chatting">
 
     <application
+        android:name=".App"
         android:allowBackup="true"
         android:fullBackupContent="@xml/backup_descriptor"
         android:icon="@mipmap/ic_launcher"
@@ -10,7 +11,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".CreateAccountPage2Activity"/>
+        <activity android:name=".create_account.CreateAccountPage2Activity"/>
         <activity android:name=".LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -20,7 +21,7 @@
                 <action android:name="android.intent.action.VIEW" />
             </intent-filter>
         </activity>
-        <activity android:name=".CreateAccountActivity"
+        <activity android:name=".create_account.CreateAccountActivity"
             android:parentActivityName=".LoginActivity"/>
         <activity android:name=".MainActivity"/>
         <activity android:name=".ChatActivity"
