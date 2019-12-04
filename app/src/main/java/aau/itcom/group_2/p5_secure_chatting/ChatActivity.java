@@ -1,21 +1,27 @@
 package aau.itcom.group_2.p5_secure_chatting;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 
-import com.firebase.client.ChildEventListener;
-import com.firebase.client.DataSnapshot;
+import com.google.firebase.database.ChildEventListener;
 import com.firebase.client.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.DataSnapshot;
 
 import android.os.UserHandle;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -27,10 +33,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import aau.itcom.group_2.p5_secure_chatting.create_account.User;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class ChatActivity extends AppCompatActivity {
+    String TAG = "ChatActivity";
     LinearLayout layout;
     RelativeLayout layout_2;
     ImageView sendButton;
@@ -38,6 +47,11 @@ public class ChatActivity extends AppCompatActivity {
     ScrollView scrollView;
     Firebase reference1, reference2;
     FirebaseAuth mAuth;
+    FirebaseUser firebaseUser;
+    FirebaseDatabase database;
+    static String currentUserId;
+    static User currentUser;
+    String clickedUserId;
     ProgressDialog pd;
 
     @Override
@@ -45,10 +59,8 @@ public class ChatActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+        Intent intent = getIntent();
 
-        ActionBar actionBar = getSupportActionBar();
-        assert actionBar != null;
-        actionBar.setTitle("ChatActivity");
 
         layout = findViewById(R.id.layout1);
         layout_2 = findViewById(R.id.layout2);
@@ -57,11 +69,45 @@ public class ChatActivity extends AppCompatActivity {
         scrollView = findViewById(R.id.scrollView);
 
         Firebase.setAndroidContext(this);
+
         mAuth = FirebaseAuth.getInstance();
+        firebaseUser = mAuth.getCurrentUser();
+
+        database = FirebaseDatabase.getInstance();
+
+        Bundle extras = intent.getExtras();
+        if(extras != null) {
+            currentUserId = extras.getString("CURRENT_USERID");
+            clickedUserId = extras.getString("CLICKED_USERID");
+        }else{
+            Log.e(TAG, "NO BUNDLE WITH INPUT");
+        }
 
 
-        reference1 = new Firebase("https://p5-chat-nibba.firebaseio.com/" + UserDetails.username + "_" + UserDetails.chatWith);
-        reference2 = new Firebase("https://p5-chat-nibba.firebaseio.com/" + UserDetails.chatWith + "_" + UserDetails.username);
+
+/*
+        database.getReference("users").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                currentUser = dataSnapshot.child(currentUserId).getValue(User.class);
+
+            }
+
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+
+        });
+
+ */
+
+
+
+
+        //reference1 = new Firebase("https://p5-chat-nibba.firebaseio.com/" + UserDetails.username + "_" + UserDetails.chatWith);
+        //reference2 = new Firebase("https://p5-chat-nibba.firebaseio.com/" + UserDetails.chatWith + "_" + UserDetails.username);
 
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -72,9 +118,10 @@ public class ChatActivity extends AppCompatActivity {
                     Map<String, String> map = new HashMap<>();
                     map.put("message", messageText);
                                     //Dit navn
-                    map.put("user", UserDetails.username);
-                    reference1.push().setValue(map);
-                    reference2.push().setValue(map);
+                    map.put("user", currentUser.getName());
+                    database.getReference().child("users").child(currentUserId).child("contacts")
+                            .child(clickedUserId).setValue(map);
+                    //reference2.push().setValue(map);
                     messageArea.setText("");
                 }
             }
@@ -84,17 +131,18 @@ public class ChatActivity extends AppCompatActivity {
         pd.setMessage("Loading...");
         pd.show();
 
-        reference1.addChildEventListener(new ChildEventListener() {
+
+        database.getReference().child("users").child(currentUserId).child("contacts").child(clickedUserId).addChildEventListener(new ChildEventListener() {
             @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, String s) {
                 Map map = dataSnapshot.getValue(Map.class);
-                String message = Objects.requireNonNull(map.get("message")).toString();
-                String userName = Objects.requireNonNull(map.get("user")).toString();
+                String message = map.get("message").toString();
+                String userName = map.get("user").toString();
 
 
 
                 //Modtagerens navn
-                if(!userName.equals(UserDetails.username)){
+                if(!userName.equals(currentUser.getName())){
                     addMessageBox(message, 1);
                 }
                 else{
@@ -119,14 +167,11 @@ public class ChatActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onCancelled(com.firebase.client.FirebaseError firebaseError) {
+            public void onCancelled(@NonNull DatabaseError databaseError) {
 
             }
 
-            /*@Override
-            public void onCancelled(FirebaseError firebaseError) {
 
-            }*/
         });
     }
 

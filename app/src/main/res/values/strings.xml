@@ -17,4 +17,9 @@
     <string name="current_conversations">Current conversations</string>
     <string name="email">Email</string>
     <string name="textview">TextView</string>
+    <string name="search_contact_email">Search contact (email)</string>
+    <string name="enter_email">Enter email...</string>
+    <string name="add_contact">Add contact</string>
+    <string name="accept">accept</string>
+    <string name="decline">decline</string>
 </resources>

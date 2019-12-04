@@ -2,6 +2,8 @@ package aau.itcom.group_2.p5_secure_chatting;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -11,6 +13,7 @@ import com.google.firebase.auth.FirebaseUser;
 public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
+    private FirebaseUser firebaseUser;
     private FirebaseAnalytics mFirebaseAnalytics;
 
     @Override
@@ -18,20 +21,24 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /*ActionBar actionBar = getSupportActionBar();
-        //actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setTitle("MainActivity");*/
-        // bitch
         mAuth = FirebaseAuth.getInstance();
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+        firebaseUser = mAuth.getCurrentUser();
+
+        if (firebaseUser != null){
+            startActivity(new Intent(this, ListUsersActivity.class));
+            finish();
+        } else {
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+        }
     }
 
     @Override
     public void onStart() {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        updateUI(currentUser);
+        updateUI(firebaseUser);
     }
 
     private void updateUI(FirebaseUser currentUser) {

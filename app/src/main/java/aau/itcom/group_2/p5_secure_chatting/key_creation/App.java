@@ -1,7 +1,9 @@
-package aau.itcom.group_2.p5_secure_chatting;
+package aau.itcom.group_2.p5_secure_chatting.key_creation;
 
 import android.app.Application;
 import android.content.SharedPreferences;
+
+import aau.itcom.group_2.p5_secure_chatting.key_creation.Keys;
 import androidx.preference.PreferenceManager;
 import android.util.Log;
 

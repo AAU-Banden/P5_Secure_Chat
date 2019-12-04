@@ -121,8 +121,6 @@ public class LoginActivity extends AppCompatActivity {
                             //password = findViewById(R.id.editText_passwordLogin);
                             //user = editTextPhoneOrEmail.getText().toString();
                             pass = editTextPassword.getText().toString();
-                            UserDetails.userId = user;
-                            UserDetails.password = pass;
                             startActivity(intentListUser);
                         } else {
                             // If sign in fails, display a message to the user.
