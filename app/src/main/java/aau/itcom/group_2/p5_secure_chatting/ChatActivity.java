@@ -85,7 +85,7 @@ public class ChatActivity extends AppCompatActivity {
 
 
 
-/*
+
         database.getReference("users").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -101,7 +101,7 @@ public class ChatActivity extends AppCompatActivity {
 
         });
 
- */
+
 
 
 
@@ -115,6 +115,13 @@ public class ChatActivity extends AppCompatActivity {
                 String messageText = messageArea.getText().toString();
 
                 if(!messageText.equals("")){
+                    Message message = new Message(messageText, null, currentUserId);
+
+                    database.getReference().child("users").child(currentUserId).child("contacts").child(clickedUserId).child("chat").setValue(message);
+                    database.getReference().child("users").child(clickedUserId).child("contacts").child(currentUserId).child("chat").setValue(message);
+
+                    messageArea.setText("");
+                    /*
                     Map<String, String> map = new HashMap<>();
                     map.put("message", messageText);
                                     //Dit navn
@@ -123,6 +130,8 @@ public class ChatActivity extends AppCompatActivity {
                             .child(clickedUserId).setValue(map);
                     //reference2.push().setValue(map);
                     messageArea.setText("");
+
+                     */
                 }
             }
         });
@@ -131,7 +140,41 @@ public class ChatActivity extends AppCompatActivity {
         pd.setMessage("Loading...");
         pd.show();
 
+        // Loading the messages down from firebase
+        database.getReference().child("users").child(currentUserId).child("contacts").child(clickedUserId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                // opretter chat i firebase hvis det ikke eksisterer
+                if(!dataSnapshot.child("chat").exists()){
+                    database.getReference().child("users").child(currentUserId).child("contacts").child(clickedUserId).setValue("chat");
+                }
+                // Henter beskeder og putter dem i de rigtige messageBoxe
+                else{
+                    for(DataSnapshot postSnapshot : dataSnapshot.getChildren()){
+                        Message message = postSnapshot.child("chat").getValue(Message.class);
 
+
+                        if (message!=null) {
+                            if (!message.getIdOfSender().equals(currentUserId)) {
+                                addMessageBox(message.getMessage(), 1);
+                            } else {
+                                addMessageBox(message.getMessage(), 2);
+                            }
+                        }
+                        pd.dismiss();
+
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+/*
         database.getReference().child("users").child(currentUserId).child("contacts").child(clickedUserId).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, String s) {
@@ -173,7 +216,10 @@ public class ChatActivity extends AppCompatActivity {
 
 
         });
+
+ */
     }
+
 
     public void addMessageBox(String message, int type){
         TextView textView = new TextView(ChatActivity.this);

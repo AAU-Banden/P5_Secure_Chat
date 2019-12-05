@@ -42,7 +42,6 @@ public class AddContactActivity extends AppCompatActivity {
     String currentUserId;
     Contact contact;
     ListView requestList;
-    ArrayList<String> arrayList;
     ProgressDialog pd;
     int counter = 0;
     int totalUsers = 0;
@@ -55,7 +54,6 @@ public class AddContactActivity extends AppCompatActivity {
         editText_addContact = findViewById(R.id.editText_addContact);
         requestList = findViewById(R.id.requestList);
 
-        arrayList = new ArrayList<>();
         contactRequests = new ArrayList<>();
 
         pd = new ProgressDialog(AddContactActivity.this);
@@ -77,11 +75,11 @@ public class AddContactActivity extends AppCompatActivity {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                        contactRequest = dataSnapshot.child(currentUserId).child("contactRequests").getValue(ContactRequest.class);
+                        contactRequest = postSnapshot.getValue(ContactRequest.class);
 
                         contactRequests.add(contactRequest);
 
-                        Log.i(TAG, arrayList.get(0));
+                        Log.i(TAG, "Name of contact request: " + contactRequests.get(totalUsers).getMessage());
 
                         totalUsers++;
                     }
@@ -93,10 +91,8 @@ public class AddContactActivity extends AppCompatActivity {
                     if (totalUsers < 1) {
                         requestList.setVisibility(View.GONE);
                         totalUsers = 0;
-                        Log.i(TAG, "first if");
 
                     } else {
-                        Log.i(TAG, "else");
                         requestList.setVisibility(View.VISIBLE);
                         requestList.setAdapter(new CustomAdapter(contactRequests, AddContactActivity.this));
 
@@ -148,6 +144,7 @@ public class AddContactActivity extends AppCompatActivity {
                                         .child(contactRequest.getContactRequestID()).setValue(contactRequest);
                                 Log.i(TAG, "Adding contact request to firebase");
                             }
+                            editText_addContact.setText("");
                             break;
                         } else if (counter == dataSnapshot.getChildrenCount()){
                             editText_addContact.setError("No user found with this email");
@@ -177,21 +174,28 @@ public class AddContactActivity extends AppCompatActivity {
 
     public void acceptRequest (final ContactRequest contactRequest){
 
+        database = FirebaseDatabase.getInstance();
+        mAuth = FirebaseAuth.getInstance();
+        firebaseUser = mAuth.getCurrentUser();
+        userID = mAuth.getUid();
+        contact = null;
+
+
         database.getReference("users").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                userID = firebaseUser.getUid();
-                user = dataSnapshot.child("users").getValue(User.class);
-                Contact contact = null;
+                user = dataSnapshot.child(userID).getValue(User.class);
                 if (user != null) {
                     contact = new Contact(user.getName(), user.getLastName(), user.getEmail(), user.getPhoneNumber(), user.getID());
+                    Log.i(TAG, "contact " + contact.getName());
                 }
-                database.getReference().child("users").child(userID).child("contacts").setValue(contactRequest.getContact());
-                database.getReference().child("users").child(contactRequest.getContactRequestID()).child("contacts").setValue(contact);
+                // Adding to this users contacts
+                database.getReference().child("users").child(userID).child("contacts").child(contactRequest.getContactRequestID()).setValue(contactRequest.getContact());
+                // Adding to senders contacts
+                database.getReference().child("users").child(contactRequest.getContactRequestID()).child("contacts").child(userID).setValue(contact);
 
                 // Removing request
-                database.getReference().child("users").child(userID).child(contactRequest.getContactRequestID()).removeValue();
-
+                database.getReference().child("users").child(userID).child("contactRequests").child(contactRequest.getContactRequestID()).removeValue();
             }
 
 
@@ -201,11 +205,20 @@ public class AddContactActivity extends AppCompatActivity {
             }
 
         });
+
     }
 
     public void declineRequest (final ContactRequest contactRequest){
         // Removing request
-        database.getReference().child("users").child(userID).child(contactRequest.getContactRequestID()).removeValue();
+        mAuth = FirebaseAuth.getInstance();
+        firebaseUser = mAuth.getCurrentUser();
+        database = FirebaseDatabase.getInstance();
+        userID = mAuth.getUid();
+        Log.i(TAG, userID);
+        Log.i(TAG, contactRequest.getContactRequestID());
+
+
+        database.getReference().child("users").child(userID).child("contactRequests").child(contactRequest.getContactRequestID()).removeValue();
 
 
 

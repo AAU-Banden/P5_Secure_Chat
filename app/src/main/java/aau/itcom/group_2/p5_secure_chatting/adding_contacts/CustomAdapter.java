@@ -17,6 +17,7 @@ public class CustomAdapter extends BaseAdapter implements ListAdapter {
 
     private ArrayList<ContactRequest> list;
     private Context context;
+    private AddContactActivity addContactActivity = new AddContactActivity();
 
 
     public CustomAdapter(ArrayList<ContactRequest> list, Context context) {
@@ -56,19 +57,30 @@ public class CustomAdapter extends BaseAdapter implements ListAdapter {
         Button deleteBtn = (Button)view.findViewById(R.id.delete_btn);
         Button addBtn = (Button)view.findViewById(R.id.add_btn);
 
+
+        /**
+         * DELETION OF REQUEST
+         */
         deleteBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
 
+                addContactActivity.declineRequest(list.get(position));
 
                 list.remove(position); //or some other task
                 notifyDataSetChanged();
             }
         });
+
+        /**
+         * ACCEPTING REQUEST
+         */
         addBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                //do something
+
+                addContactActivity.acceptRequest(list.get(position));
+
                 list.remove(position);
                 notifyDataSetChanged();
             }
