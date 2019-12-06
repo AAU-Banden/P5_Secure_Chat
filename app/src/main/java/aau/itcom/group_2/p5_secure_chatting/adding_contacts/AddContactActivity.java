@@ -126,16 +126,18 @@ public class AddContactActivity extends AppCompatActivity {
 
                     for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                         String emailDatabase = String.valueOf(postSnapshot.child("email").getValue());
-
+                        currentUserId = mAuth.getUid();
+                        currentUser = dataSnapshot.child(currentUserId).getValue(User.class);
                         counter ++;
                         Log.i(TAG, emailDatabase);
                         Log.i(TAG, "typed mail: " +  email);
 
-                        if (email.equals(emailDatabase)) {
+                        if (email.equals(currentUser.getEmail())){
+                            editText_addContact.setError("Error (You cannot send a request to yourself)");
+                        } else if (email.equals(emailDatabase)) {
                             requestedID = String.valueOf(postSnapshot.child("id").getValue());
 
-                            currentUserId = mAuth.getUid();
-                            currentUser = dataSnapshot.child(currentUserId).getValue(User.class);
+
                             Log.i(TAG, "id: " + requestedID + " users name" + currentUser.getName());
                             if (currentUser!=null){
                                 contact = new Contact(currentUser.getName(), currentUser.getLastName(), currentUser.getEmail(), currentUser.getPhoneNumber(), currentUser.getID());

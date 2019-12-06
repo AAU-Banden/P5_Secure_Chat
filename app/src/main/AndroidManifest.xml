@@ -34,6 +34,7 @@
         <activity
             android:name=".ChatActivity"
             android:parentActivityName=".ListUsersActivity"
+            android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan">
         </activity>
 

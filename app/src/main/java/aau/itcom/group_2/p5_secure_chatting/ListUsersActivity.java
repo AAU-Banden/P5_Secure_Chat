@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,6 +30,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 public class ListUsersActivity extends AppCompatActivity {
+    private final String TAG = "ListUsersActivity";
     ListView usersList;
     TextView noUsersText;
     ArrayList<String> arrayList;
@@ -36,7 +38,6 @@ public class ListUsersActivity extends AppCompatActivity {
     int totalUsers = 2;
     Context context;
     EditText editText_addName;
-    final String TAG = "LOGIN_ACTIVITY";
     ProgressDialog pd;
     FirebaseDatabase database;
     FirebaseUser firebaseUser;
@@ -85,7 +86,9 @@ public class ListUsersActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         firebaseUser = mAuth.getCurrentUser();
 
+
         if (firebaseUser != null) {
+            Log.i(TAG, "Firebase-user is not null");
             currentUserId = firebaseUser.getUid();
             database = FirebaseDatabase.getInstance();
             /**
@@ -95,11 +98,15 @@ public class ListUsersActivity extends AppCompatActivity {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+
                         String name = String.valueOf(postSnapshot.child("name").getValue());
+                        String lastName = String.valueOf(postSnapshot.child("lastName").getValue());
                         String id = String.valueOf(postSnapshot.child("id").getValue());
 
+                        Log.i(TAG, "Name in arraylist" + name);
+
                         if (!currentUserId.equals(String.valueOf(postSnapshot.child("id")))) {
-                            arrayList.add(name);
+                            arrayList.add(name + " " + lastName);
                             arrayListIDs.add(id);
                         }
 
@@ -120,6 +127,9 @@ public class ListUsersActivity extends AppCompatActivity {
                         usersList.setVisibility(View.VISIBLE);
                         usersList.setAdapter(new ArrayAdapter<>(ListUsersActivity.this, android.R.layout.simple_list_item_1, arrayList));
 
+                        for (int i = 0; i < arrayList.size(); i++){
+                            Log.i(TAG, i + " " + arrayList.get(i));
+                        }
                     }
                 }
 
@@ -130,6 +140,10 @@ public class ListUsersActivity extends AppCompatActivity {
                 }
 
             });
+        }else{
+            /**
+             * TODO: LOG USER OUT
+             */
         }
 
 
@@ -140,8 +154,10 @@ public class ListUsersActivity extends AppCompatActivity {
                 Intent myIntent = new Intent(ListUsersActivity.this, ChatActivity.class);
                 String clickedContactId = arrayListIDs.get(position);
 
+                Log.i(TAG, "clicked contact id: "+clickedContactId);
 
                 Bundle bundle = new Bundle();
+                bundle.putString("CLICKED_USER_FULLNAME", arrayList.get(position));
                 bundle.putString("CLICKED_USERID", clickedContactId);
                 bundle.putString("CURRENT_USERID", currentUserId);
 

@@ -3,12 +3,14 @@ import android.os.Build;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 
 public class Message {
     String message;
     String sessionKey = null;
     String time;
+    String id ;
 
     String idOfSender;
 
@@ -22,17 +24,24 @@ public class Message {
         this.sessionKey = sessionKey;
         this.idOfSender = idOfSender;
         this.time = getTime();
+        this.id = UUID.randomUUID().toString();
 
     }
     public Message(){
 
     }
 
+    public String getId() {
+        return id;
+    }
 
+    public void setId(String id) {
+        this.id = id;
+    }
 
-    private String getTime (){
+    public String getTime (){
         localDataTime = LocalDateTime.now();
-        dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         time = localDataTime.format(dateTimeFormatter);
 

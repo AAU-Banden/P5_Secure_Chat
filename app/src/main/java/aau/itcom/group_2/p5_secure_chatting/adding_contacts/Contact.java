@@ -1,11 +1,15 @@
 package aau.itcom.group_2.p5_secure_chatting.adding_contacts;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Contact {
     private String name;
     private String lastName;
     private String email;
     private String phoneNumber;
     private String id;
+
 
     public Contact(String name, String lastName, String email, String phoneNumber, String id) {
         this.name = name;
@@ -18,6 +22,8 @@ public class Contact {
     public Contact(){
 
     }
+
+
 
     public String getName() {
         return name;

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.ChildEventListener;
 import com.firebase.client.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
@@ -15,9 +16,12 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.database.DataSnapshot;
 
 import android.os.UserHandle;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -33,75 +37,99 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import aau.itcom.group_2.p5_secure_chatting.adding_contacts.AddContactActivity;
 import aau.itcom.group_2.p5_secure_chatting.create_account.User;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class ChatActivity extends AppCompatActivity {
     String TAG = "ChatActivity";
     LinearLayout layout;
-    RelativeLayout layout_2;
     ImageView sendButton;
     EditText messageArea;
     ScrollView scrollView;
-    Firebase reference1, reference2;
     FirebaseAuth mAuth;
     FirebaseUser firebaseUser;
     FirebaseDatabase database;
-    static String currentUserId;
-    static User currentUser;
+    String currentUserId;
+    User currentUser;
     String clickedUserId;
     ProgressDialog pd;
+    Message message;
+    String fullNameClickedUser;
+    TextView textView;
+
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_in_chatactivity, menu);
+        return true;
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // action with ID action_refresh was selected
+            case android.R.id.home:
+                finish();
+                break;
+            default:
+                break;
+        }
+        return true;
+    }
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
         Intent intent = getIntent();
 
 
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbarChat);
+        setSupportActionBar(myToolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+
+        if (getSupportActionBar() != null){
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
+
+
+
+
         layout = findViewById(R.id.layout1);
-        layout_2 = findViewById(R.id.layout2);
         sendButton = findViewById(R.id.sendButton);
         messageArea = findViewById(R.id.messageArea);
         scrollView = findViewById(R.id.scrollView);
 
-        Firebase.setAndroidContext(this);
-
-        mAuth = FirebaseAuth.getInstance();
-        firebaseUser = mAuth.getCurrentUser();
 
         database = FirebaseDatabase.getInstance();
 
         Bundle extras = intent.getExtras();
         if(extras != null) {
+            fullNameClickedUser = extras.getString("CLICKED_USER_FULLNAME");
             currentUserId = extras.getString("CURRENT_USERID");
             clickedUserId = extras.getString("CLICKED_USERID");
         }else{
             Log.e(TAG, "NO BUNDLE WITH INPUT");
         }
 
+        textView = (TextView) myToolbar.findViewById(R.id.toolbarTextView);
+        textView.setText(fullNameClickedUser);
 
 
-
-        database.getReference("users").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                currentUser = dataSnapshot.child(currentUserId).getValue(User.class);
-
-            }
-
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-
-        });
-
-
+        Log.i(TAG, "clicked contact id: "+ clickedUserId);
+        Log.i(TAG, "current user id: "+ currentUserId);
 
 
 
@@ -115,10 +143,17 @@ public class ChatActivity extends AppCompatActivity {
                 String messageText = messageArea.getText().toString();
 
                 if(!messageText.equals("")){
-                    Message message = new Message(messageText, null, currentUserId);
+                    message = new Message(messageText, null, currentUserId);
 
-                    database.getReference().child("users").child(currentUserId).child("contacts").child(clickedUserId).child("chat").setValue(message);
-                    database.getReference().child("users").child(clickedUserId).child("contacts").child(currentUserId).child("chat").setValue(message);
+                    database.getReference().child("users").child(currentUserId).child("contacts").child(clickedUserId).child("chat").child(message.getTime()).setValue(message)
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    addMessageBox(message.getMessage(), 2);
+                                }
+                            });
+
+                    database.getReference().child("users").child(clickedUserId).child("contacts").child(currentUserId).child("chat").child(message.getTime()).setValue(message);
 
                     messageArea.setText("");
                     /*
@@ -139,14 +174,14 @@ public class ChatActivity extends AppCompatActivity {
         pd = new ProgressDialog(ChatActivity.this);
         pd.setMessage("Loading...");
         pd.show();
-
+/*
         // Loading the messages down from firebase
         database.getReference().child("users").child(currentUserId).child("contacts").child(clickedUserId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 // opretter chat i firebase hvis det ikke eksisterer
                 if(!dataSnapshot.child("chat").exists()){
-                    database.getReference().child("users").child(currentUserId).child("contacts").child(clickedUserId).setValue("chat");
+                    database.getReference().child("users").child(currentUserId).child("contacts").child(clickedUserId).child("chat");
                 }
                 // Henter beskeder og putter dem i de rigtige messageBoxe
                 else{
@@ -161,10 +196,11 @@ public class ChatActivity extends AppCompatActivity {
                                 addMessageBox(message.getMessage(), 2);
                             }
                         }
-                        pd.dismiss();
 
                     }
                 }
+                pd.dismiss();
+
             }
 
             @Override
@@ -173,26 +209,32 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
+ */
 
-/*
-        database.getReference().child("users").child(currentUserId).child("contacts").child(clickedUserId).addChildEventListener(new ChildEventListener() {
+        database.getReference().child("users").child(currentUserId).child("contacts").child(clickedUserId).child("chat").addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, String s) {
-                Map map = dataSnapshot.getValue(Map.class);
-                String message = map.get("message").toString();
-                String userName = map.get("user").toString();
+                // Henter beskeder og putter dem i de rigtige messageBoxe
+                message = dataSnapshot.getValue(Message.class);
 
+                Log.i(TAG, "message: " + message.getMessage());
 
+                if (message != null) {
 
-                //Modtagerens navn
-                if(!userName.equals(currentUser.getName())){
-                    addMessageBox(message, 1);
+                    if (!message.getIdOfSender().equals(currentUserId)) {
+                        addMessageBox(message.getMessage(), 1);
+                    } else {
+                        addMessageBox(message.getMessage(), 2);
+                    }
                 }
-                else{
-                    addMessageBox(message, 2);
-                }
+
+
+
+
                 pd.dismiss();
             }
+
+
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
@@ -217,7 +259,7 @@ public class ChatActivity extends AppCompatActivity {
 
         });
 
- */
+
     }
 
 
@@ -232,13 +274,13 @@ public class ChatActivity extends AppCompatActivity {
         LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         lp2.weight = 7.0f;
 
-        if(type == 1) {
+        if(type == 1) { //left
             lp2.gravity = Gravity.START;
             textView.setBackgroundResource(R.drawable.bubble_in);
 
         }
         else{
-            lp2.gravity = Gravity.END;
+            lp2.gravity = Gravity.END; //right
             textView.setBackgroundResource(R.drawable.bubble_out);
 
         }

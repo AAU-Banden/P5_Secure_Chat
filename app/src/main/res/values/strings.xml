@@ -22,4 +22,6 @@
     <string name="add_contact">Add contact</string>
     <string name="accept">accept</string>
     <string name="decline">decline</string>
+    <string name="back_button">Back Button</string>
+    <string name="write_a_message">Write a message</string>
 </resources>
