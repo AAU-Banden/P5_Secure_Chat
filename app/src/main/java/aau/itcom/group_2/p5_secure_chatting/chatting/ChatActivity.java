@@ -131,15 +131,9 @@ public class ChatActivity extends AppCompatActivity {
                 if(!messageText.equals("")){
                     message = new Message(messageText, null, currentUserId);
 
-                    database.getReference().child("users").child(currentUserId).child("contacts").child(clickedUserId).child("chat").child(message.getTime()).setValue(message);
-                         //   .addOnSuccessListener(new OnSuccessListener<Void>() {
-                             //   @Override
-                            //    public void onSuccess(Void aVoid) {
-                           //         addMessageBox(message.getMessage(), 2);
-                         //       }
-                        //    });
+                    database.getReference().child("chat").child(currentUserId+clickedUserId).child(message.getTime()).setValue(message);
 
-                    database.getReference().child("users").child(clickedUserId).child("contacts").child(currentUserId).child("chat").child(message.getTime()).setValue(message);
+                    // database.getReference().child("users").child(clickedUserId).child("contacts").child(currentUserId).child("chat").child(message.getTime()).setValue(message);
 
                     messageArea.setText("");
                     /*
@@ -197,7 +191,7 @@ public class ChatActivity extends AppCompatActivity {
 
  */
 
-        database.getReference().child("users").child(currentUserId).child("contacts").child(clickedUserId).child("chat").addChildEventListener(new ChildEventListener() {
+        database.getReference().child("chat").child(currentUserId+clickedUserId).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, String s) {
                 // Henter beskeder og putter dem i de rigtige messageBoxe

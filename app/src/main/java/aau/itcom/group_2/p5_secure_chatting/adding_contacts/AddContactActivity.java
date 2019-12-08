@@ -232,15 +232,18 @@ public class AddContactActivity extends AppCompatActivity {
                     Log.i(TAG, "contact " + contact.getName());
                 }
                 // Adding to this users contacts
-                database.getReference().child("users").child(userID).child("contacts").child(contactRequest.getContactRequestID()).setValue(contactRequest.getContact());
+                database.getReference().child("contact").child(contactRequest.getContactRequestID()).setValue(contactRequest.getContact());
+                database.getReference().child("users").child(userID).child("contacts").setValue(contactRequest.getContactRequestID());
+
                 // Adding to senders contacts
-                database.getReference().child("users").child(contactRequest.getContactRequestID()).child("contacts").child(userID).setValue(contact);
+                database.getReference().child("contact").child(userID).setValue(contact);
+                database.getReference().child("users").child(contactRequest.getContactRequestID()).child("contacts").setValue(userID);
                 /**
                  * Sending key to sender
                  */
                 try {
-                    database.getReference().child("users").child(contactRequest.getContactRequestID()).child("contacts").child(userID).child("DH_public_key").setValue(contactRequest.getKey());
-                    database.getReference().child("users").child((userID)).child("contacts").child(contactRequest.getContactRequestID()).child("DH_public_key").setValue(retrievePublicKey());
+                    database.getReference().child("contact").child(contactRequest.getContactRequestID()).child("DH_public_key").setValue(contactRequest.getKey());
+                    database.getReference().child("contact").child((userID)).child("DH_public_key").setValue(retrievePublicKey());
                 } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableEntryException e) {
                     e.printStackTrace();
                 }
@@ -251,8 +254,8 @@ public class AddContactActivity extends AppCompatActivity {
 
 
                 //HOTFIX: ADDING CHAT
-                database.getReference().child("users").child(userID).child("contacts").child(contactRequest.getContactRequestID()).child("chat").setValue("lalala");
-                database.getReference().child("users").child(contactRequest.getContactRequestID()).child("contacts").child(userID).child("chat").setValue("lalala");
+                //database.getReference().child("users").child(userID).child("contacts").child(contactRequest.getContactRequestID()).child("chat").setValue("lalala");
+                //database.getReference().child("users").child(contactRequest.getContactRequestID()).child("contacts").child(userID).child("chat").setValue("lalala");
 
 
                 /**

@@ -25,6 +25,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 
 import aau.itcom.group_2.p5_secure_chatting.adding_contacts.AddContactActivity;
+import aau.itcom.group_2.p5_secure_chatting.adding_contacts.Contact;
 import aau.itcom.group_2.p5_secure_chatting.chatting.ChatActivity;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -44,6 +45,7 @@ public class ListUsersActivity extends AppCompatActivity {
     FirebaseUser firebaseUser;
     FirebaseAuth mAuth;
     String currentUserId;
+    Contact contact;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -95,19 +97,23 @@ public class ListUsersActivity extends AppCompatActivity {
             /**
              * Acessing user first names on the database and add them to arrayList
              */
-            database.getReference("users").child(currentUserId).child("contacts").addListenerForSingleValueEvent(new ValueEventListener() {
+            database.getReference().addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
 
-                        String name = String.valueOf(postSnapshot.child("name").getValue());
-                        String lastName = String.valueOf(postSnapshot.child("lastName").getValue());
+                    for (DataSnapshot postSnapshot : dataSnapshot.child("users").child(currentUserId).child("contacts").getChildren()) {
                         String id = String.valueOf(postSnapshot.child("id").getValue());
+                        Log.i(TAG, String.valueOf(dataSnapshot.child("users").child(currentUserId).child("contacts").getChildrenCount()) + " " +  dataSnapshot.child("contact").getChildrenCount());
+                        Log.i(TAG, id);
 
-                        Log.i(TAG, "Name in arraylist" + name);
+
+                        contact  = dataSnapshot.child("contact").child(id).getValue(Contact.class);
+
+
+                        Log.i(TAG, "Name in arraylist" + contact.getName());
 
                         if (!currentUserId.equals(String.valueOf(postSnapshot.child("id")))) {
-                            arrayList.add(name + " " + lastName);
+                            arrayList.add(contact.getName() + " " + contact.getLastName());
                             arrayListIDs.add(id);
                         }
 
