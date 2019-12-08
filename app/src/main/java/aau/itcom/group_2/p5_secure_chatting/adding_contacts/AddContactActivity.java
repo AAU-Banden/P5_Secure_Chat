@@ -262,6 +262,7 @@ public class AddContactActivity extends AppCompatActivity {
                  * TODO: Create shared secret for encryption for this contact - save it to android keystore
                  */
             }
+            //
 
 
             @Override
