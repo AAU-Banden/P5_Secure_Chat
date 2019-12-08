@@ -25,6 +25,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 
 import aau.itcom.group_2.p5_secure_chatting.adding_contacts.AddContactActivity;
+import aau.itcom.group_2.p5_secure_chatting.chatting.ChatActivity;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;

@@ -1,4 +1,4 @@
-package aau.itcom.group_2.p5_secure_chatting;
+package aau.itcom.group_2.p5_secure_chatting.chatting;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -7,16 +7,12 @@ import android.os.Bundle;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.ChildEventListener;
-import com.firebase.client.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.database.DataSnapshot;
 
-import android.os.UserHandle;
-import android.provider.ContactsContract;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -24,27 +20,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
-import aau.itcom.group_2.p5_secure_chatting.adding_contacts.AddContactActivity;
+import aau.itcom.group_2.p5_secure_chatting.R;
 import aau.itcom.group_2.p5_secure_chatting.create_account.User;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 public class ChatActivity extends AppCompatActivity {
     String TAG = "ChatActivity";
@@ -145,13 +131,13 @@ public class ChatActivity extends AppCompatActivity {
                 if(!messageText.equals("")){
                     message = new Message(messageText, null, currentUserId);
 
-                    database.getReference().child("users").child(currentUserId).child("contacts").child(clickedUserId).child("chat").child(message.getTime()).setValue(message)
-                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    addMessageBox(message.getMessage(), 2);
-                                }
-                            });
+                    database.getReference().child("users").child(currentUserId).child("contacts").child(clickedUserId).child("chat").child(message.getTime()).setValue(message);
+                         //   .addOnSuccessListener(new OnSuccessListener<Void>() {
+                             //   @Override
+                            //    public void onSuccess(Void aVoid) {
+                           //         addMessageBox(message.getMessage(), 2);
+                         //       }
+                        //    });
 
                     database.getReference().child("users").child(clickedUserId).child("contacts").child(currentUserId).child("chat").child(message.getTime()).setValue(message);
 

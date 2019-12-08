@@ -1,18 +1,17 @@
 package aau.itcom.group_2.p5_secure_chatting.adding_contacts;
 
-import aau.itcom.group_2.p5_secure_chatting.ListUsersActivity;
 import aau.itcom.group_2.p5_secure_chatting.R;
 import aau.itcom.group_2.p5_secure_chatting.create_account.User;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
 
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
+
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 
@@ -23,7 +22,18 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.IOException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.UnrecoverableEntryException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.Arrays;
+
+
 
 public class AddContactActivity extends AppCompatActivity {
 
@@ -111,10 +121,33 @@ public class AddContactActivity extends AppCompatActivity {
 
     }
 
+    public String retrievePublicKey() throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableEntryException {
+
+
+        KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
+        keyStore.load(null);
+
+        KeyStore.Entry entry = keyStore.getEntry("DH_key_alias", null);
+        PrivateKey privateKey = ((KeyStore.PrivateKeyEntry) entry).getPrivateKey();
+        PublicKey publicKey = keyStore.getCertificate("DH_key_alias").getPublicKey();
+
+        //getting encoded public key and turning it into a string
+        byte[] publicKeyBytes = publicKey.getEncoded();
+        String publicKeyString = Base64.encodeToString(publicKeyBytes, Base64.DEFAULT);
+
+        //decoding public key
+        byte[] decodedString = Base64.decode(publicKeyString.getBytes(), Base64.DEFAULT);
+        String string = Base64.encodeToString(publicKeyBytes, Base64.DEFAULT);
+        return publicKeyString;
+    }
+
+
+
     public void sendContactRequest (View view){
         /**
          * First finding the id that is searched with the email
          */
+
         email = editText_addContact.getText().toString();
 
         if (!email.equals("")) {
@@ -123,11 +156,12 @@ public class AddContactActivity extends AppCompatActivity {
 
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    Log.i(TAG, dataSnapshot.child(currentUserId).child("name").getValue().toString());
+
+                    currentUser = (User) dataSnapshot.child(currentUserId).getValue(User.class);
 
                     for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                         String emailDatabase = String.valueOf(postSnapshot.child("email").getValue());
-                        currentUserId = mAuth.getUid();
-                        currentUser = dataSnapshot.child(currentUserId).getValue(User.class);
                         counter ++;
                         Log.i(TAG, emailDatabase);
                         Log.i(TAG, "typed mail: " +  email);
@@ -141,7 +175,13 @@ public class AddContactActivity extends AppCompatActivity {
                             Log.i(TAG, "id: " + requestedID + " users name" + currentUser.getName());
                             if (currentUser!=null){
                                 contact = new Contact(currentUser.getName(), currentUser.getLastName(), currentUser.getEmail(), currentUser.getPhoneNumber(), currentUser.getID());
-                                contactRequest = new ContactRequest(contact);
+
+                                try {
+                                    contactRequest = new ContactRequest(contact, retrievePublicKey());
+                                } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableEntryException e) {
+                                    e.printStackTrace();
+                                }
+
                                 database.getReference().child("users").child(requestedID).child("contactRequests")
                                         .child(contactRequest.getContactRequestID()).setValue(contactRequest);
                                 Log.i(TAG, "Adding contact request to firebase");
@@ -195,9 +235,29 @@ public class AddContactActivity extends AppCompatActivity {
                 database.getReference().child("users").child(userID).child("contacts").child(contactRequest.getContactRequestID()).setValue(contactRequest.getContact());
                 // Adding to senders contacts
                 database.getReference().child("users").child(contactRequest.getContactRequestID()).child("contacts").child(userID).setValue(contact);
+                /**
+                 * Sending key to sender
+                 */
+                try {
+                    database.getReference().child("users").child(contactRequest.getContactRequestID()).child("contacts").child(userID).child("DH_public_key").setValue(contactRequest.getKey());
+                    database.getReference().child("users").child((userID)).child("contacts").child(contactRequest.getContactRequestID()).child("DH_public_key").setValue(retrievePublicKey());
+                } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableEntryException e) {
+                    e.printStackTrace();
+                }
+
 
                 // Removing request
                 database.getReference().child("users").child(userID).child("contactRequests").child(contactRequest.getContactRequestID()).removeValue();
+
+
+                //HOTFIX: ADDING CHAT
+                database.getReference().child("users").child(userID).child("contacts").child(contactRequest.getContactRequestID()).child("chat").setValue("lalala");
+                database.getReference().child("users").child(contactRequest.getContactRequestID()).child("contacts").child(userID).child("chat").setValue("lalala");
+
+
+                /**
+                 * TODO: Create shared secret for encryption for this contact - save it to android keystore
+                 */
             }
 
 

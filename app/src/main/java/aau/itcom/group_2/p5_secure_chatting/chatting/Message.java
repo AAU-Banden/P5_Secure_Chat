@@ -1,4 +1,4 @@
-package aau.itcom.group_2.p5_secure_chatting;
+package aau.itcom.group_2.p5_secure_chatting.chatting;
 import android.os.Build;
 
 import java.time.LocalDateTime;

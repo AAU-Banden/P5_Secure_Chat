@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateUI(FirebaseUser currentUser) {
         /**
-         * TO DO - WHAT SHOULD HAPPEN TO THE UI...
+         * TODO - WHAT SHOULD HAPPEN TO THE UI...
          */
     }
 }
