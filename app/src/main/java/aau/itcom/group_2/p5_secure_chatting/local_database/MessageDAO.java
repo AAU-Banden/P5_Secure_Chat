@@ -29,4 +29,7 @@ public interface MessageDAO {
 
     @Query("SELECT * FROM messages WHERE idOfSender LIKE :id")
     public List<Message> loadMessagesWithIdOfContact(String id);
+
+    @Query("DELETE FROM contacts")
+    public void nukeTable();
 }

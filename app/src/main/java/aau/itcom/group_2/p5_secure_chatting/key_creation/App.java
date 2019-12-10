@@ -18,7 +18,7 @@ import java.security.cert.CertificateException;
 
 public class App extends Application {
 
-    private final static String TAG = "First time application is ";
+    private final static String TAG = "FIRST_TIME_RAN";
     @Override
     public void onCreate() {
         super.onCreate();
@@ -40,7 +40,12 @@ public class App extends Application {
             SharedPreferences.Editor editor = prefs.edit();
             editor.putBoolean("firstTime", true);
             editor.apply();
-            Log.i(TAG, "Your mom is a hoe");
+
+            try {
+                Log.i(TAG, "CREATING DH KEYS: PUBLIC KEY: " + keys.getPublicKey("DH_key_alias").toString());
+            } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

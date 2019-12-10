@@ -298,6 +298,11 @@ public class AddContactActivity extends AppCompatActivity {
                 /**
                  * TODO: Create shared secret for encryption for this contact - save it to android keystore
                  */
+                try {
+                    createSharedKey(contactRequest.getContact());
+                } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableEntryException | InvalidKeySpecException | InvalidKeyException e) {
+                    e.printStackTrace();
+                }
             }
             //
 
@@ -327,7 +332,7 @@ public class AddContactActivity extends AppCompatActivity {
 
     }
 
-    public SecretKey createSharedKey (Contact contact) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableEntryException, InvalidKeySpecException, InvalidKeyException {
+    public static SecretKey createSharedKey(Contact contact) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableEntryException, InvalidKeySpecException, InvalidKeyException {
         //Public key from contact
         String key = contact.getPublicKey();
         byte[] decodedKey = Base64.decode(key.getBytes(), Base64.DEFAULT);
@@ -341,10 +346,10 @@ public class AddContactActivity extends AppCompatActivity {
         //Private key from user
         KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
         keyStore.load(null);
-
         KeyStore.Entry entry = keyStore.getEntry("DH_key_alias", null);
-        PrivateKey privateKey = ((KeyStore.PrivateKeyEntry) entry).getPrivateKey();
-        PublicKey publicKey = keyStore.getCertificate("DH_key_alias").getPublicKey();
+        KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) entry;
+        PrivateKey privateKey = privateKeyEntry.getPrivateKey();
+        //PublicKey publicKey = keyStore.getCertificate("DH_key_alias").getPublicKey();
 
 
 

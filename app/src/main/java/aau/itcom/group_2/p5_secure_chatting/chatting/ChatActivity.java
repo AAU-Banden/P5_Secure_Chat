@@ -13,6 +13,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.DataSnapshot;
 
+import android.util.Base64;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -38,7 +39,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
@@ -170,9 +173,17 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String messageText = messageArea.getText().toString();
+                try {
+                    messageText = encryptDH(clickedUserId, messageText);
+                    Log.i(TAG, "Encrypted message: " + messageText);
+                } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableKeyException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
+                    e.printStackTrace();
+                }
+
 
                 if(!messageText.equals("")){
                     message = new Message(messageText, null, currentUserId);
+
 
                     /**
                      * Sending message to server and storing it locally.
@@ -201,7 +212,16 @@ public class ChatActivity extends AppCompatActivity {
 
 
 
+
                 if (message != null) {
+                    try {
+                        Log.i(TAG, "Encrypted message: " + message.getMessage());
+                        message.setMessage(decryptDH(clickedUserId, message.getMessage()));
+                        Log.i(TAG, "Decrypted message: " + message.getMessage());
+                    } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableKeyException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
+                        e.printStackTrace();
+                    }
+
                     Log.i(TAG, "message: " + message.getMessage());
                     messageDAO.insertMessage(message);
                     addMessageBox(message.getMessage(), 1);
@@ -266,19 +286,32 @@ public class ChatActivity extends AppCompatActivity {
         scrollView.fullScroll(View.FOCUS_DOWN);
     }
 
-    public void encryptDH(Contact contact) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableKeyException, NoSuchPaddingException, InvalidKeyException {
+    public String encryptDH(String contactId, String message) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableKeyException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
         KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
         keyStore.load(null);
         // Key imported, obtain a reference to it.
-        SecretKey keyStoreKey = (SecretKey) keyStore.getKey(contact.getId(), null);
+        SecretKey keyStoreKey = (SecretKey) keyStore.getKey(contactId, null);
         // The original key can now be discarded.
 
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         cipher.init(Cipher.ENCRYPT_MODE, keyStoreKey);
+        byte[] cipherText = cipher.doFinal(message.getBytes("UTF-8"));
 
+        return Base64.encodeToString(cipherText, Base64.DEFAULT);
 
     }
-    public void decryptDH(){
 
+    public String decryptDH(String contactId, String message) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableKeyException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+        KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
+        keyStore.load(null);
+        // Key imported, obtain a reference to it.
+        SecretKey keyStoreKey = (SecretKey) keyStore.getKey(contactId, null);
+        // The original key can now be discarded.
+
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        cipher.init(Cipher.DECRYPT_MODE, keyStoreKey);
+        byte[] cipherText = cipher.doFinal(message.getBytes("UTF-8"));
+
+        return Base64.encodeToString(cipherText, Base64.DEFAULT);
     }
 }

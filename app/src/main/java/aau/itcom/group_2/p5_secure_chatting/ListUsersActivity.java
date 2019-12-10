@@ -24,6 +24,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableEntryException;
+import java.security.cert.CertificateException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -34,6 +41,7 @@ import aau.itcom.group_2.p5_secure_chatting.chatting.ChatActivity;
 import aau.itcom.group_2.p5_secure_chatting.chatting.Message;
 import aau.itcom.group_2.p5_secure_chatting.local_database.AppDatabase;
 import aau.itcom.group_2.p5_secure_chatting.local_database.ContactDAO;
+import aau.itcom.group_2.p5_secure_chatting.local_database.MessageDAO;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -55,6 +63,7 @@ public class ListUsersActivity extends AppCompatActivity {
     Contact contact;
     AppDatabase localDatabase;
     ContactDAO contactDAO;
+    MessageDAO messageDAO;
     ArrayList<Contact> contacts;
     ArrayList<String> contactNames;
 
@@ -100,7 +109,10 @@ public class ListUsersActivity extends AppCompatActivity {
         firebaseUser = mAuth.getCurrentUser();
         localDatabase = AppDatabase.getInstance(this);
         contactDAO = localDatabase.getContactDAO();
+        messageDAO = localDatabase.getMessageDAO();
         //contactDAO.nukeTable();
+        //messageDAO.nukeTable();
+
 
         if (firebaseUser != null) {
             Log.i(TAG, "Firebase-user is not null");
@@ -118,6 +130,15 @@ public class ListUsersActivity extends AppCompatActivity {
                         Log.i(TAG, "message: " + contact.getEmail());
                         contactDAO.insertContact(contact);
                         database.getReference().child("users").child(currentUserId).child("contacts").child(contact.getId()).removeValue();
+                        /**
+                        * Creating the shared key if a contactRequest have been accepted
+                         */
+
+                        try {
+                            AddContactActivity.createSharedKey(contact);
+                        } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableEntryException | InvalidKeySpecException | InvalidKeyException e) {
+                            e.printStackTrace();
+                        }
                     }
 
                     pd.dismiss();

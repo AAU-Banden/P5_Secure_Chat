@@ -37,7 +37,7 @@ public class Keys {
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC, "AndroidKeyStore");
         keyPairGenerator.initialize(new KeyGenParameterSpec.Builder(
                 DH_alias,
-                KeyProperties.PURPOSE_SIGN | KeyProperties.PURPOSE_VERIFY) //What they keys can be used for
+                KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT) //What they keys can be used for
                 .setDigests(KeyProperties.DIGEST_SHA256,  // private key is only authorized to use either SHA256 or SHA512 for signing
                         KeyProperties.DIGEST_SHA512)
                 // Only permit the private key to be used if the user authenticated
