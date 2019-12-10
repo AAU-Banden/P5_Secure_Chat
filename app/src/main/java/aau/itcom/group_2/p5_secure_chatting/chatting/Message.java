@@ -5,20 +5,24 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
+import androidx.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
 
+@Entity (tableName = "messages")
 public class Message {
-    String message;
-    String sessionKey = null;
-    String time;
-    String id ;
+    private String message;
+    private String sessionKey;
+    private String time;
+    @PrimaryKey
+    @NonNull
+    private String id ;
 
-    String idOfSender;
-
-    LocalDateTime localDataTime;
-    DateTimeFormatter dateTimeFormatter;
-
+    private String idOfSender;
 
 
+    @Ignore
     public Message(String message, String sessionKey, String idOfSender) {
         this.message = message;
         this.sessionKey = sessionKey;
@@ -27,8 +31,8 @@ public class Message {
         this.id = UUID.randomUUID().toString();
 
     }
-    public Message(){
 
+    public Message(){
     }
 
     public String getId() {
@@ -40,8 +44,8 @@ public class Message {
     }
 
     public String getTime (){
-        localDataTime = LocalDateTime.now();
-        dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime localDataTime = LocalDateTime.now();
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         time = localDataTime.format(dateTimeFormatter);
 

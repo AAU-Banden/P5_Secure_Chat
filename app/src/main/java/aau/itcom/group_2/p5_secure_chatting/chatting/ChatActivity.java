@@ -26,11 +26,31 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+
 import aau.itcom.group_2.p5_secure_chatting.R;
+import aau.itcom.group_2.p5_secure_chatting.adding_contacts.Contact;
 import aau.itcom.group_2.p5_secure_chatting.create_account.User;
+import aau.itcom.group_2.p5_secure_chatting.local_database.AppDatabase;
+import aau.itcom.group_2.p5_secure_chatting.local_database.MessageDAO;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.room.RoomDatabase;
 
 public class ChatActivity extends AppCompatActivity {
     String TAG = "ChatActivity";
@@ -48,6 +68,9 @@ public class ChatActivity extends AppCompatActivity {
     Message message;
     String fullNameClickedUser;
     TextView textView;
+    static AppDatabase localDatabase;
+    static MessageDAO messageDAO;
+    ArrayList<Message> messages;
 
 
 
@@ -89,17 +112,42 @@ public class ChatActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
-
-
-
-
         layout = findViewById(R.id.layout1);
         sendButton = findViewById(R.id.sendButton);
         messageArea = findViewById(R.id.messageArea);
         scrollView = findViewById(R.id.scrollView);
+        textView = (TextView) myToolbar.findViewById(R.id.toolbarTextView);
+        textView.setText(fullNameClickedUser);
 
 
         database = FirebaseDatabase.getInstance();
+        localDatabase = AppDatabase.getInstance(this);
+        messageDAO = localDatabase.getMessageDAO();
+
+        pd = new ProgressDialog(ChatActivity.this);
+        pd.setMessage("Loading...");
+        pd.show();
+
+        messages = (ArrayList<Message>) messageDAO.loadAllMessages();
+
+        Collections.sort(messages, new Comparator<Message>() {
+            @Override
+            public int compare(Message message1, Message message2) {
+                String s1 = message1.getTime();
+                String s2 = message2.getTime();
+                return s1.compareToIgnoreCase(s2);
+            }
+        });
+        for (Message message : messages) {
+            if (!message.getIdOfSender().equals(currentUserId)) {
+                addMessageBox(message.getMessage(), 1);
+            } else {
+                addMessageBox(message.getMessage(), 2);
+            }
+        }
+        pd.dismiss();
+
+
 
         Bundle extras = intent.getExtras();
         if(extras != null) {
@@ -110,8 +158,6 @@ public class ChatActivity extends AppCompatActivity {
             Log.e(TAG, "NO BUNDLE WITH INPUT");
         }
 
-        textView = (TextView) myToolbar.findViewById(R.id.toolbarTextView);
-        textView.setText(fullNameClickedUser);
 
 
         Log.i(TAG, "clicked contact id: "+ clickedUserId);
@@ -119,9 +165,6 @@ public class ChatActivity extends AppCompatActivity {
 
 
 
-
-        //reference1 = new Firebase("https://p5-chat-nibba.firebaseio.com/" + UserDetails.username + "_" + UserDetails.chatWith);
-        //reference2 = new Firebase("https://p5-chat-nibba.firebaseio.com/" + UserDetails.chatWith + "_" + UserDetails.username);
 
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -131,90 +174,42 @@ public class ChatActivity extends AppCompatActivity {
                 if(!messageText.equals("")){
                     message = new Message(messageText, null, currentUserId);
 
-                    database.getReference().child("chat").child(currentUserId+clickedUserId).child(message.getTime()).setValue(message);
+                    /**
+                     * Sending message to server and storing it locally.
+                     */
+                    database.getReference().child("chat").child(currentUserId+clickedUserId).child(message.getId()).setValue(message);
 
+                    messageDAO.insertMessage(message);
                     // database.getReference().child("users").child(clickedUserId).child("contacts").child(currentUserId).child("chat").child(message.getTime()).setValue(message);
 
-                    messageArea.setText("");
-                    /*
-                    Map<String, String> map = new HashMap<>();
-                    map.put("message", messageText);
-                                    //Dit navn
-                    map.put("user", currentUser.getName());
-                    database.getReference().child("users").child(currentUserId).child("contacts")
-                            .child(clickedUserId).setValue(map);
-                    //reference2.push().setValue(map);
+                    addMessageBox(message.getMessage(), 2);
+
                     messageArea.setText("");
 
-                     */
                 }
             }
         });
 
-        pd = new ProgressDialog(ChatActivity.this);
-        pd.setMessage("Loading...");
-        pd.show();
-/*
-        // Loading the messages down from firebase
-        database.getReference().child("users").child(currentUserId).child("contacts").child(clickedUserId).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                // opretter chat i firebase hvis det ikke eksisterer
-                if(!dataSnapshot.child("chat").exists()){
-                    database.getReference().child("users").child(currentUserId).child("contacts").child(clickedUserId).child("chat");
-                }
-                // Henter beskeder og putter dem i de rigtige messageBoxe
-                else{
-                    for(DataSnapshot postSnapshot : dataSnapshot.getChildren()){
-                        Message message = postSnapshot.child("chat").getValue(Message.class);
 
 
-                        if (message!=null) {
-                            if (!message.getIdOfSender().equals(currentUserId)) {
-                                addMessageBox(message.getMessage(), 1);
-                            } else {
-                                addMessageBox(message.getMessage(), 2);
-                            }
-                        }
-
-                    }
-                }
-                pd.dismiss();
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
- */
-
-        database.getReference().child("chat").child(currentUserId+clickedUserId).addChildEventListener(new ChildEventListener() {
+        database.getReference().child("chat").child(clickedUserId+currentUserId).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, String s) {
                 // Henter beskeder og putter dem i de rigtige messageBoxe
                 message = dataSnapshot.getValue(Message.class);
 
-                Log.i(TAG, "message: " + message.getMessage());
+
+
 
                 if (message != null) {
+                    Log.i(TAG, "message: " + message.getMessage());
+                    messageDAO.insertMessage(message);
+                    addMessageBox(message.getMessage(), 1);
 
-                    if (!message.getIdOfSender().equals(currentUserId)) {
-                        addMessageBox(message.getMessage(), 1);
-                    } else {
-                        addMessageBox(message.getMessage(), 2);
-                    }
                 }
 
-
-
-
-                pd.dismiss();
+                database.getReference().child("chat").child(clickedUserId+currentUserId).child(message.getId()).removeValue();
             }
-
-
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
@@ -236,13 +231,15 @@ public class ChatActivity extends AppCompatActivity {
 
             }
 
-
         });
 
 
+
+
+
+
+
     }
-
-
     public void addMessageBox(String message, int type){
         TextView textView = new TextView(ChatActivity.this);
         textView.setText(message);
@@ -267,5 +264,21 @@ public class ChatActivity extends AppCompatActivity {
         textView.setLayoutParams(lp2);
         layout.addView(textView);
         scrollView.fullScroll(View.FOCUS_DOWN);
+    }
+
+    public void encryptDH(Contact contact) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableKeyException, NoSuchPaddingException, InvalidKeyException {
+        KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
+        keyStore.load(null);
+        // Key imported, obtain a reference to it.
+        SecretKey keyStoreKey = (SecretKey) keyStore.getKey(contact.getId(), null);
+        // The original key can now be discarded.
+
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        cipher.init(Cipher.ENCRYPT_MODE, keyStoreKey);
+
+
+    }
+    public void decryptDH(){
+
     }
 }

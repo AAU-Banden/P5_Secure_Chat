@@ -24,26 +24,18 @@ public class ContactRequest {
     String contactRequestID;
     Contact contact;
     String message;
-    String key;
     String userID;
     User user;
     FirebaseUser firebaseUser;
     FirebaseDatabase database;
 
 
-    public String getKey() {
-        return key;
-    }
 
-    public void setKey(String key) {
-        this.key = key;
-    }
 
-    public ContactRequest(Contact contact, String publicKey) {
-        this.contactRequestID = contact.getid();
+    public ContactRequest(Contact contact) {
+        this.contactRequestID = contact.getId();
         this.contact = contact;
         this.message = contact.getName() + " " + contact.getLastName() + " would like to add you to his contacts";
-        this.key = publicKey;
     }
     public ContactRequest(){
 

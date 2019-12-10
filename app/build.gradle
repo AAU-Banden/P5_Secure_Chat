@@ -5,11 +5,17 @@ android {
     compileSdkVersion 29
     defaultConfig {
         applicationId "aau.itcom.group_2"
-        minSdkVersion 24
+        minSdkVersion 26
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
     }
     buildTypes {
         release {
@@ -40,6 +46,10 @@ dependencies {
     def security_version = "1.0.0-alpha02"
     implementation "androidx.security:security-crypto:$security_version"
     implementation 'androidx.mediarouter:mediarouter:1.1.0'
+
+
+    implementation 'androidx.room:room-runtime:2.2.2'
+    annotationProcessor 'androidx.room:room-compiler:2.2.2'
 
 
 }

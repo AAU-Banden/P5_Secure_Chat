@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
@@ -12,9 +13,11 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class MainActivity extends AppCompatActivity {
 
+    final private String TAG = "TheMainActivty";
     private FirebaseAuth mAuth;
     private FirebaseUser firebaseUser;
     private FirebaseAnalytics mFirebaseAnalytics;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,13 +28,17 @@ public class MainActivity extends AppCompatActivity {
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         firebaseUser = mAuth.getCurrentUser();
 
+        Log.i(TAG, "path " +  getDatabasePath("app_database").getAbsolutePath());
+
         if (firebaseUser != null){
+            Log.i(TAG, "ytjyjytjytjyt" + firebaseUser.getUid());
             startActivity(new Intent(this, ListUsersActivity.class));
             finish();
         } else {
             startActivity(new Intent(this, LoginActivity.class));
             finish();
         }
+
     }
 
     @Override

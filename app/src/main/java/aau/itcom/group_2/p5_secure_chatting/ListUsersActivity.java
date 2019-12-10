@@ -3,6 +3,7 @@ package aau.itcom.group_2.p5_secure_chatting;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -17,16 +18,22 @@ import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import aau.itcom.group_2.p5_secure_chatting.adding_contacts.AddContactActivity;
 import aau.itcom.group_2.p5_secure_chatting.adding_contacts.Contact;
 import aau.itcom.group_2.p5_secure_chatting.chatting.ChatActivity;
+import aau.itcom.group_2.p5_secure_chatting.chatting.Message;
+import aau.itcom.group_2.p5_secure_chatting.local_database.AppDatabase;
+import aau.itcom.group_2.p5_secure_chatting.local_database.ContactDAO;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -46,6 +53,10 @@ public class ListUsersActivity extends AppCompatActivity {
     FirebaseAuth mAuth;
     String currentUserId;
     Contact contact;
+    AppDatabase localDatabase;
+    ContactDAO contactDAO;
+    ArrayList<Contact> contacts;
+    ArrayList<String> contactNames;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -77,8 +88,7 @@ public class ListUsersActivity extends AppCompatActivity {
 
 
 
-        arrayList = new ArrayList<>();
-        arrayListIDs = new ArrayList<>();
+        contactNames = new ArrayList<>();
         usersList = findViewById(R.id.usersList);
         noUsersText = findViewById(R.id.noUsersText);
 
@@ -88,15 +98,99 @@ public class ListUsersActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         firebaseUser = mAuth.getCurrentUser();
-
+        localDatabase = AppDatabase.getInstance(this);
+        contactDAO = localDatabase.getContactDAO();
+        //contactDAO.nukeTable();
 
         if (firebaseUser != null) {
             Log.i(TAG, "Firebase-user is not null");
             currentUserId = firebaseUser.getUid();
             database = FirebaseDatabase.getInstance();
+
+            database.getReference().child("users").child(currentUserId).child("contacts").addChildEventListener(new ChildEventListener() {
+                @Override
+                public void onChildAdded(@NonNull DataSnapshot dataSnapshot, String s) {
+
+
+                    contact = dataSnapshot.getValue(Contact.class);
+
+                    if (contact != null) {
+                        Log.i(TAG, "message: " + contact.getEmail());
+                        contactDAO.insertContact(contact);
+                        database.getReference().child("users").child(currentUserId).child("contacts").child(contact.getId()).removeValue();
+                    }
+
+                    pd.dismiss();
+                }
+
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+                }
+
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+
+
+            });
+        }else{
             /**
-             * Acessing user first names on the database and add them to arrayList
+             * TODO: LOG USER OUT
              */
+        }
+
+
+
+        /**
+         * Acessing users in the local database and sorting the list alphabetically. Then adding them to the UI
+         */
+
+
+
+        contacts = (ArrayList<Contact>) contactDAO.loadAllContacts();
+
+        Collections.sort(contacts, new Comparator<Contact>() {
+            @Override
+            public int compare(Contact contact1, Contact contact2) {
+                String s1 = contact1.getName();
+                String s2 = contact2.getName();
+                return s1.compareToIgnoreCase(s2);
+            }
+        });
+
+        for (Contact contact : contacts) {
+            contactNames.add(contact.getName() + " " + contact.getLastName());
+        }
+
+        if (contacts.size() < 1) {
+            noUsersText.setVisibility(View.VISIBLE);
+            usersList.setVisibility(View.GONE);
+            totalUsers = 0;
+
+        } else {
+            noUsersText.setVisibility(View.GONE);
+            usersList.setVisibility(View.VISIBLE);
+            usersList.setAdapter(new ArrayAdapter<>(ListUsersActivity.this, android.R.layout.simple_list_item_1, contactNames));
+
+        }
+        pd.dismiss();
+
+
+
+
+            /*
             database.getReference().addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
@@ -119,11 +213,12 @@ public class ListUsersActivity extends AppCompatActivity {
 
                         totalUsers++;
                     }
-                    pd.dismiss();
+
 
                     /**
                      * Hide list if no users are found
                      */
+                    /*
                     if (totalUsers < 1) {
                         noUsersText.setVisibility(View.VISIBLE);
                         usersList.setVisibility(View.GONE);
@@ -138,6 +233,7 @@ public class ListUsersActivity extends AppCompatActivity {
                             Log.i(TAG, i + " " + arrayList.get(i));
                         }
                     }
+
                 }
 
 
@@ -147,11 +243,10 @@ public class ListUsersActivity extends AppCompatActivity {
                 }
 
             });
-        }else{
-            /**
-             * TODO: LOG USER OUT
-             */
-        }
+
+
+                     */
+
 
 
 
@@ -159,12 +254,12 @@ public class ListUsersActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent myIntent = new Intent(ListUsersActivity.this, ChatActivity.class);
-                String clickedContactId = arrayListIDs.get(position);
+                String clickedContactId = contacts.get(position).getId();
 
                 Log.i(TAG, "clicked contact id: "+clickedContactId);
 
                 Bundle bundle = new Bundle();
-                bundle.putString("CLICKED_USER_FULLNAME", arrayList.get(position));
+                bundle.putString("CLICKED_USER_FULLNAME", contacts.get(position).getName() + " " + contacts.get(position).getLastName());
                 bundle.putString("CLICKED_USERID", clickedContactId);
                 bundle.putString("CURRENT_USERID", currentUserId);
 
