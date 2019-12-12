@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,6 +17,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 
+import com.google.crypto.tink.proto.KeyData;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -26,21 +28,34 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
+import java.security.KeyFactory;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyAgreement;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
 
 import aau.itcom.group_2.p5_secure_chatting.adding_contacts.AddContactActivity;
 import aau.itcom.group_2.p5_secure_chatting.adding_contacts.Contact;
 import aau.itcom.group_2.p5_secure_chatting.chatting.ChatActivity;
 import aau.itcom.group_2.p5_secure_chatting.chatting.Message;
+import aau.itcom.group_2.p5_secure_chatting.key_creation.Key;
 import aau.itcom.group_2.p5_secure_chatting.local_database.AppDatabase;
 import aau.itcom.group_2.p5_secure_chatting.local_database.ContactDAO;
+import aau.itcom.group_2.p5_secure_chatting.local_database.KeyDAO;
 import aau.itcom.group_2.p5_secure_chatting.local_database.MessageDAO;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -66,6 +81,7 @@ public class ListUsersActivity extends AppCompatActivity {
     MessageDAO messageDAO;
     ArrayList<Contact> contacts;
     ArrayList<String> contactNames;
+    KeyDAO keyDAO;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -91,10 +107,9 @@ public class ListUsersActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_users);
-        
+
         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
-
 
 
         contactNames = new ArrayList<>();
@@ -110,6 +125,7 @@ public class ListUsersActivity extends AppCompatActivity {
         localDatabase = AppDatabase.getInstance(this);
         contactDAO = localDatabase.getContactDAO();
         messageDAO = localDatabase.getMessageDAO();
+        keyDAO = localDatabase.getKeyDAO();
         //contactDAO.nukeTable();
         //messageDAO.nukeTable();
 
@@ -131,12 +147,12 @@ public class ListUsersActivity extends AppCompatActivity {
                         contactDAO.insertContact(contact);
                         database.getReference().child("users").child(currentUserId).child("contacts").child(contact.getId()).removeValue();
                         /**
-                        * Creating the shared key if a contactRequest have been accepted
+                         * Creating the shared key if a contactRequest have been accepted
                          */
 
                         try {
                             AddContactActivity.createSharedKey(contact);
-                        } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableEntryException | InvalidKeySpecException | InvalidKeyException e) {
+                        } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableEntryException | InvalidKeySpecException | InvalidKeyException | NoSuchProviderException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException e) {
                             e.printStackTrace();
                         }
                     }
@@ -166,18 +182,16 @@ public class ListUsersActivity extends AppCompatActivity {
 
 
             });
-        }else{
+        } else {
             /**
              * TODO: LOG USER OUT
              */
         }
 
 
-
         /**
          * Acessing users in the local database and sorting the list alphabetically. Then adding them to the UI
          */
-
 
 
         contacts = (ArrayList<Contact>) contactDAO.loadAllContacts();
@@ -269,20 +283,19 @@ public class ListUsersActivity extends AppCompatActivity {
                      */
 
 
-
-
         usersList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent myIntent = new Intent(ListUsersActivity.this, ChatActivity.class);
                 String clickedContactId = contacts.get(position).getId();
 
-                Log.i(TAG, "clicked contact id: "+clickedContactId);
+                Log.i(TAG, "clicked contact id: " + clickedContactId);
 
                 Bundle bundle = new Bundle();
                 bundle.putString("CLICKED_USER_FULLNAME", contacts.get(position).getName() + " " + contacts.get(position).getLastName());
                 bundle.putString("CLICKED_USERID", clickedContactId);
                 bundle.putString("CURRENT_USERID", currentUserId);
+                bundle.putByteArray("CLICKED_USERIV", contacts.get(position).getIv());
 
                 myIntent.putExtras(bundle);
                 startActivity(myIntent);
@@ -292,8 +305,8 @@ public class ListUsersActivity extends AppCompatActivity {
     }
 
 
-    public void search (){
+    public void search() {
 
     }
-}
 
+}

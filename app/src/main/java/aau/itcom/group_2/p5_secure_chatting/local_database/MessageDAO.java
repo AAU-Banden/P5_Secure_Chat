@@ -30,6 +30,6 @@ public interface MessageDAO {
     @Query("SELECT * FROM messages WHERE idOfSender LIKE :id")
     public List<Message> loadMessagesWithIdOfContact(String id);
 
-    @Query("DELETE FROM contacts")
+    @Query("DELETE FROM messages")
     public void nukeTable();
 }

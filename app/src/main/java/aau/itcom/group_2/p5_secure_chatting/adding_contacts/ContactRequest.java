@@ -1,21 +1,9 @@
 package aau.itcom.group_2.p5_secure_chatting.adding_contacts;
 
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-
-import java.io.IOException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
-import java.security.cert.CertificateException;
-import java.util.UUID;
 
 import aau.itcom.group_2.p5_secure_chatting.create_account.User;
-import aau.itcom.group_2.p5_secure_chatting.key_creation.Keys;
-import androidx.annotation.NonNull;
 
 public class ContactRequest {
 

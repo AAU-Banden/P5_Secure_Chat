@@ -28,12 +28,15 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -44,11 +47,14 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 
 import aau.itcom.group_2.p5_secure_chatting.R;
 import aau.itcom.group_2.p5_secure_chatting.adding_contacts.Contact;
 import aau.itcom.group_2.p5_secure_chatting.create_account.User;
+import aau.itcom.group_2.p5_secure_chatting.key_creation.Key;
 import aau.itcom.group_2.p5_secure_chatting.local_database.AppDatabase;
+import aau.itcom.group_2.p5_secure_chatting.local_database.KeyDAO;
 import aau.itcom.group_2.p5_secure_chatting.local_database.MessageDAO;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -67,12 +73,14 @@ public class ChatActivity extends AppCompatActivity {
     String currentUserId;
     User currentUser;
     String clickedUserId;
+    byte[] clickedUserIv;
     ProgressDialog pd;
     Message message;
     String fullNameClickedUser;
     TextView textView;
-    static AppDatabase localDatabase;
-    static MessageDAO messageDAO;
+    AppDatabase localDatabase;
+    MessageDAO messageDAO;
+    KeyDAO keyDAO;
     ArrayList<Message> messages;
 
 
@@ -126,6 +134,7 @@ public class ChatActivity extends AppCompatActivity {
         database = FirebaseDatabase.getInstance();
         localDatabase = AppDatabase.getInstance(this);
         messageDAO = localDatabase.getMessageDAO();
+        keyDAO = localDatabase.getKeyDAO();
 
         pd = new ProgressDialog(ChatActivity.this);
         pd.setMessage("Loading...");
@@ -157,6 +166,7 @@ public class ChatActivity extends AppCompatActivity {
             fullNameClickedUser = extras.getString("CLICKED_USER_FULLNAME");
             currentUserId = extras.getString("CURRENT_USERID");
             clickedUserId = extras.getString("CLICKED_USERID");
+            clickedUserIv = extras.getByteArray("CLICKED_USERIV");
         }else{
             Log.e(TAG, "NO BUNDLE WITH INPUT");
         }
@@ -174,9 +184,9 @@ public class ChatActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String messageText = messageArea.getText().toString();
                 try {
-                    messageText = encryptDH(clickedUserId, messageText);
+                    messageText = encryptDH(clickedUserId, messageText, clickedUserIv);
                     Log.i(TAG, "Encrypted message: " + messageText);
-                } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableKeyException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
+                } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableKeyException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchProviderException | InvalidAlgorithmParameterException | InvalidKeySpecException e) {
                     e.printStackTrace();
                 }
 
@@ -216,9 +226,9 @@ public class ChatActivity extends AppCompatActivity {
                 if (message != null) {
                     try {
                         Log.i(TAG, "Encrypted message: " + message.getMessage());
-                        message.setMessage(decryptDH(clickedUserId, message.getMessage()));
+                        message.setMessage(decryptDH(clickedUserId, message.getMessage(), clickedUserIv));
                         Log.i(TAG, "Decrypted message: " + message.getMessage());
-                    } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableKeyException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
+                    } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableKeyException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchProviderException | InvalidAlgorithmParameterException | InvalidKeySpecException e) {
                         e.printStackTrace();
                     }
 
@@ -286,32 +296,32 @@ public class ChatActivity extends AppCompatActivity {
         scrollView.fullScroll(View.FOCUS_DOWN);
     }
 
-    public String encryptDH(String contactId, String message) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableKeyException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-        KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
-        keyStore.load(null);
-        // Key imported, obtain a reference to it.
-        SecretKey keyStoreKey = (SecretKey) keyStore.getKey(contactId, null);
-        // The original key can now be discarded.
+    public String encryptDH(String contactId, String message, byte[] contactIv) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableKeyException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, NoSuchProviderException, InvalidKeySpecException, InvalidAlgorithmParameterException {
+        Key keyFromDB = keyDAO.loadKeyWithKeyName(contactId);
+        Key key = new Key();
+        SecretKey secretKey = key.decryptSecretKeyWithRSA(keyFromDB.getBytes(), keyFromDB.getAlgorithm());
 
+
+        IvParameterSpec ivParameterSpec = new IvParameterSpec(contactIv);
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipher.init(Cipher.ENCRYPT_MODE, keyStoreKey);
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec);
+
         byte[] cipherText = cipher.doFinal(message.getBytes("UTF-8"));
 
         return Base64.encodeToString(cipherText, Base64.DEFAULT);
 
     }
 
-    public String decryptDH(String contactId, String message) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableKeyException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-        KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
-        keyStore.load(null);
-        // Key imported, obtain a reference to it.
-        SecretKey keyStoreKey = (SecretKey) keyStore.getKey(contactId, null);
-        // The original key can now be discarded.
+    public String decryptDH(String contactId, String message, byte[] contactIv) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableKeyException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, NoSuchProviderException, InvalidKeySpecException, InvalidAlgorithmParameterException {
+        Key keyFromDB = keyDAO.loadKeyWithKeyName(contactId);
+        Key key = new Key();
+        SecretKey keyStoreKey = key.decryptSecretKeyWithRSA(keyFromDB.getBytes(), keyFromDB.getAlgorithm());
 
+        IvParameterSpec ivParameterSpec = new IvParameterSpec(contactIv);
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipher.init(Cipher.DECRYPT_MODE, keyStoreKey);
+        cipher.init(Cipher.DECRYPT_MODE, keyStoreKey, ivParameterSpec);
         byte[] cipherText = cipher.doFinal(message.getBytes("UTF-8"));
 
-        return Base64.encodeToString(cipherText, Base64.DEFAULT);
+        return new String(cipherText);
     }
 }

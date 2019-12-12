@@ -16,18 +16,20 @@ public class Contact {
     private String email;
     private String phoneNumber;
     private String publicKey;
+    private byte[] iv;
     @PrimaryKey
     @NonNull
     private String id;
 
     @Ignore
-    public Contact(String name, String lastName, String email, String phoneNumber, String id, String publicKey) {
+    public Contact(String name, String lastName, String email, String phoneNumber, String id, String publicKey, byte[] iv) {
         this.name = name;
         this.lastName = lastName;
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.id = id;
         this.publicKey = publicKey;
+        this.iv = iv;
     }
 
     public Contact(){
@@ -80,5 +82,13 @@ public class Contact {
 
     public void setId(String ID) {
         this.id = ID;
+    }
+
+    public byte[] getIv() {
+        return iv;
+    }
+
+    public void setIv(byte[] iv) {
+        this.iv = iv;
     }
 }

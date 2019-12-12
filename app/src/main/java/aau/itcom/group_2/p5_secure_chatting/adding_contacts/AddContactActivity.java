@@ -2,11 +2,14 @@ package aau.itcom.group_2.p5_secure_chatting.adding_contacts;
 
 import aau.itcom.group_2.p5_secure_chatting.R;
 import aau.itcom.group_2.p5_secure_chatting.create_account.User;
+import aau.itcom.group_2.p5_secure_chatting.key_creation.Key;
 import aau.itcom.group_2.p5_secure_chatting.local_database.AppDatabase;
 import aau.itcom.group_2.p5_secure_chatting.local_database.ContactDAO;
+import aau.itcom.group_2.p5_secure_chatting.local_database.KeyDAO;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.room.Room;
+import java.security.Provider;
 
 
 import android.app.ProgressDialog;
@@ -36,22 +39,30 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.Provider;
 import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.Security;
 import java.security.UnrecoverableEntryException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyAgreement;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 
 public class AddContactActivity extends AppCompatActivity {
@@ -76,6 +87,11 @@ public class AddContactActivity extends AppCompatActivity {
     int totalUsers = 0;
     static AppDatabase localDatabase;
     static ContactDAO contactDAO;
+    static KeyDAO keyDAO;
+    private final static String pvECDHKeyName = "ECDH_PRIVATE";
+    private final static String pbECDHKeyName = "ECDH_PUBLIC";
+    private final static String secretKeyName = "SECRET";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,6 +113,8 @@ public class AddContactActivity extends AppCompatActivity {
 
         localDatabase = AppDatabase.getInstance(this);
         contactDAO = localDatabase.getContactDAO();
+        keyDAO = localDatabase.getKeyDAO();
+
 
 
 
@@ -146,10 +164,10 @@ public class AddContactActivity extends AppCompatActivity {
 
     }
 
-    public String retrievePublicKey() throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableEntryException {
-
-
-        KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
+    public String retrievePublicKey() throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableEntryException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, NoSuchProviderException, InvalidKeyException, InvalidKeySpecException {
+        Key publicKeyFromRoom = keyDAO.loadKeyWithKeyName(pbECDHKeyName);
+        byte[] publicKeyBytes = publicKeyFromRoom.getBytes();
+        /*KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
         keyStore.load(null);
 
         KeyStore.Entry entry = keyStore.getEntry("DH_key_alias", null);
@@ -160,9 +178,12 @@ public class AddContactActivity extends AppCompatActivity {
         String publicKeyString = Base64.encodeToString(publicKeyBytes, Base64.DEFAULT);
 
         //decoding public key
-        byte[] decodedString = Base64.decode(publicKeyString.getBytes(), Base64.DEFAULT);
-        String string = Base64.encodeToString(publicKeyBytes, Base64.DEFAULT);
-        return publicKeyString;
+        //byte[] decodedString = Base64.decode(publicKeyString.getBytes(), Base64.DEFAULT);
+        //String string = Base64.encodeToString(publicKeyBytes, Base64.DEFAULT);
+
+         */
+        return publicKeyFromRoom.decryptPublicKeyWithRSAToString(publicKeyBytes, publicKeyFromRoom.getAlgorithm());
+
     }
 
 
@@ -200,9 +221,9 @@ public class AddContactActivity extends AppCompatActivity {
                             Log.i(TAG, "id: " + requestedID + " users name");
                             if (currentUser!=null){
                                 try {
-                                contact = new Contact(currentUser.getName(), currentUser.getLastName(), currentUser.getEmail(), currentUser.getPhoneNumber(), currentUser.getID(), retrievePublicKey());
+                                contact = new Contact(currentUser.getName(), currentUser.getLastName(), currentUser.getEmail(), currentUser.getPhoneNumber(), currentUser.getID(), retrievePublicKey(), new SecureRandom().generateSeed(16));
                                     contactRequest = new ContactRequest(contact);
-                                } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableEntryException e) {
+                                } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableEntryException | InvalidKeyException | InvalidKeySpecException | NoSuchPaddingException | BadPaddingException | NoSuchProviderException | IllegalBlockSizeException e) {
                                     e.printStackTrace();
                                 }
 
@@ -254,8 +275,8 @@ public class AddContactActivity extends AppCompatActivity {
                 user = dataSnapshot.child(userID).getValue(User.class);
                 if (user != null) {
                     try {
-                        contact = new Contact(user.getName(), user.getLastName(), user.getEmail(), user.getPhoneNumber(), user.getID(), retrievePublicKey());
-                    } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableEntryException e) {
+                        contact = new Contact(user.getName(), user.getLastName(), user.getEmail(), user.getPhoneNumber(), user.getID(), retrievePublicKey(), contactRequest.getContact().getIv());
+                    } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableEntryException | InvalidKeyException | InvalidKeySpecException | NoSuchPaddingException | BadPaddingException | NoSuchProviderException | IllegalBlockSizeException e) {
                         e.printStackTrace();
                     }
                     Log.i(TAG, "contact " + contact.getName());
@@ -300,7 +321,7 @@ public class AddContactActivity extends AppCompatActivity {
                  */
                 try {
                     createSharedKey(contactRequest.getContact());
-                } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableEntryException | InvalidKeySpecException | InvalidKeyException e) {
+                } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableEntryException | InvalidKeySpecException | InvalidKeyException | NoSuchProviderException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException e) {
                     e.printStackTrace();
                 }
             }
@@ -332,30 +353,55 @@ public class AddContactActivity extends AppCompatActivity {
 
     }
 
-    public static SecretKey createSharedKey(Contact contact) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableEntryException, InvalidKeySpecException, InvalidKeyException {
+    public static SecretKey createSharedKey(Contact contact) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableEntryException, InvalidKeySpecException, InvalidKeyException, NoSuchProviderException, NoSuchPaddingException, BadPaddingException, IllegalBlockSizeException {
         //Public key from contact
-        String key = contact.getPublicKey();
-        byte[] decodedKey = Base64.decode(key.getBytes(), Base64.DEFAULT);
+        Key key = new Key();
+        String keyString = contact.getPublicKey();
+        byte[] decodedKey = Base64.decode(keyString.getBytes(), Base64.DEFAULT);
 
         X509EncodedKeySpec X509publicKey = new X509EncodedKeySpec(decodedKey);
-        KeyFactory keyFactory = KeyFactory.getInstance(KeyProperties.KEY_ALGORITHM_EC);
+        KeyFactory keyFactory = KeyFactory.getInstance("ECDH", "SC");
+        PublicKey contactPublicKey = keyFactory.generatePublic(X509publicKey);
 
-        PublicKey contactPublicKey =  keyFactory.generatePublic(X509publicKey);
+        //private key from user:
+        Key privateKeyFromRoom = keyDAO.loadKeyWithKeyName(pvECDHKeyName);
+        PrivateKey privateKey = privateKeyFromRoom.decryptPrivateKeyWithRSA(privateKeyFromRoom.getBytes(), privateKeyFromRoom.getAlgorithm());
 
+
+        KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH", "SC");
+        keyAgreement.init(privateKey);
+        keyAgreement.doPhase(contactPublicKey, true);
+
+
+        SecretKey secretKey = keyAgreement.generateSecret("AES");
+
+
+        //putting key into roomdatabase
+        Key key2 = new Key(key.encryptSecretKeyWithRSA(secretKey), secretKey.getAlgorithm(), contact.getId());
+        keyDAO.insertKey(key);
+
+        return secretKey;
+    }
+/*
 
         //Private key from user
         KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
         keyStore.load(null);
-        KeyStore.Entry entry = keyStore.getEntry("DH_key_alias", null);
-        KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) entry;
-        PrivateKey privateKey = privateKeyEntry.getPrivateKey();
-        //PublicKey publicKey = keyStore.getCertificate("DH_key_alias").getPublicKey();
+
+        //KeyStore.Entry entry = keyStore.getEntry("DH_key_alias", null);
+        //KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) entry;
+        //PrivateKey privateKey = privateKeyEntry.getPrivateKey();
+
+
+        PrivateKey privateKey = (PrivateKey) keyStore.getKey("DH_key_alias", null);
+
+
+        PublicKey publicKey = keyStore.getCertificate("DH_key_alias").getPublicKey();
+
+*/
 
 
 
-        KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH");
-        keyAgreement.init(privateKey);
-        keyAgreement.doPhase(contactPublicKey, true);
 
 
         /* https://neilmadden.blog/2016/05/20/ephemeral-elliptic-curve-diffie-hellman-key-agreement-in-java/
@@ -370,11 +416,24 @@ public class AddContactActivity extends AppCompatActivity {
         but it is good advice regardless):
 
          */
+        /*
         byte[] sharedSecret = keyAgreement.generateSecret();
+        MessageDigest hash = MessageDigest.getInstance("SHA-256");
+        hash.update(sharedSecret);
 
-        SecretKey secretKey = keyAgreement.generateSecret("AES");
+        List<ByteBuffer> keys = Arrays.asList(ByteBuffer.wrap(publicKey.getEncoded()), ByteBuffer.wrap(contactPublicKey.getEncoded()));
+        Collections.sort(keys);
+        hash.update(keys.get(0));
+        hash.update(keys.get(1));
 
-        Log.i(TAG, " " + Base64.encodeToString(secretKey.getEncoded(), Base64.DEFAULT));
+        byte[] derivedKey = hash.digest();
+
+        SecretKey secretKey = new SecretKeySpec(derivedKey, "AES");
+
+
+        //SecretKey secretKey = keyAgreement.generateSecret("AES");
+
+        Log.i(TAG, "SECRETKEY: " + Base64.encodeToString(secretKey.getEncoded(), Base64.DEFAULT));
 
 
         keyStore.setEntry(
@@ -387,15 +446,8 @@ public class AddContactActivity extends AppCompatActivity {
 
         return secretKey;
 
+         */
 
 
-
-
-
-
-
-
-
-    }
 
 }
