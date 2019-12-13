@@ -153,11 +153,12 @@ public class ChatActivity extends AppCompatActivity {
                 return s1.compareToIgnoreCase(s2);
             }
         });
+
         for (Message message : messages) {
             if (!message.getIdOfSender().equals(currentUserId)) {
-                addMessageBox(message.getMessage(), 2);
-            } else {
                 addMessageBox(message.getMessage(), 1);
+            } else {
+                addMessageBox(message.getMessage(), 2);
             }
         }
         pd.dismiss();
@@ -195,7 +196,7 @@ public class ChatActivity extends AppCompatActivity {
 
 
                 if(!messageText.equals("")){
-                    message = new Message(messageText, null, currentUserId);
+                    message = new Message(messageArea.getText().toString(), null, currentUserId);
 
 
                     /**
