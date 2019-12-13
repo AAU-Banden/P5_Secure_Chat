@@ -143,6 +143,22 @@ public class ChatActivity extends AppCompatActivity {
         pd.setMessage("Loading...");
         pd.show();
 
+        Bundle extras = intent.getExtras();
+        if(extras != null) {
+            fullNameClickedUser = extras.getString("CLICKED_USER_FULLNAME");
+            currentUserId = extras.getString("CURRENT_USERID");
+            clickedUserId = extras.getString("CLICKED_USERID");
+            clickedUserIv = extras.getByteArray("CLICKED_USERIV");
+        }else{
+            Log.e(TAG, "NO BUNDLE WITH INPUT");
+        }
+
+
+
+        Log.i(TAG, "clicked contact id: "+ clickedUserId);
+        Log.i(TAG, "current user id: "+ currentUserId);
+
+
         messages = (ArrayList<Message>) messageDAO.loadAllMessages();
 
         Collections.sort(messages, new Comparator<Message>() {
@@ -165,20 +181,7 @@ public class ChatActivity extends AppCompatActivity {
 
 
 
-        Bundle extras = intent.getExtras();
-        if(extras != null) {
-            fullNameClickedUser = extras.getString("CLICKED_USER_FULLNAME");
-            currentUserId = extras.getString("CURRENT_USERID");
-            clickedUserId = extras.getString("CLICKED_USERID");
-            clickedUserIv = extras.getByteArray("CLICKED_USERIV");
-        }else{
-            Log.e(TAG, "NO BUNDLE WITH INPUT");
-        }
 
-
-
-        Log.i(TAG, "clicked contact id: "+ clickedUserId);
-        Log.i(TAG, "current user id: "+ currentUserId);
 
 
 
