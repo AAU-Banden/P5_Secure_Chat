@@ -7,40 +7,6 @@
     tools:context=".ListUsersActivity">
 
 
-    <EditText
-        android:id="@+id/searchForFriends"
-        android:layout_width="266dp"
-        android:layout_height="49dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="24dp"
-        android:hint="@string/add_friends"
-        android:importantForAutofill="no"
-        android:inputType="text"
-        app:layout_constraintEnd_toStartOf="@+id/floatingActionButton"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/floatingActionButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="28dp"
-        android:layout_toEndOf="@+id/searchForFriends"
-        android:backgroundTint="#B40D10"
-        android:clickable="true"
-        android:focusable="true"
-        android:tint="#ffffff"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/searchForFriends"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@android:drawable/ic_input_add" />
-
     <TextView
         android:id="@+id/noUsersText"
         android:layout_width="32dp"
@@ -62,6 +28,7 @@
         android:layout_marginStart="20dp"
         android:layout_marginTop="25dp"
         android:layout_marginEnd="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/currentConversations" />
@@ -71,18 +38,38 @@
         android:layout_width="214dp"
         android:layout_height="34dp"
         android:layout_above="@+id/usersList"
-        android:layout_below="@+id/searchForFriends"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="70dp"
         android:text="@string/current_conversations"
         android:textSize="24sp"
         app:layout_constraintBottom_toTopOf="@+id/usersList"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/usersList"
         app:layout_constraintHorizontal_bias="0.56"
+        app:layout_constraintStart_toStartOf="@+id/usersList"
+        app:layout_constraintTop_toBottomOf="@+id/searchView" />
+
+    <SearchView
+        android:id="@+id/searchView"
+        android:layout_width="296dp"
+        android:layout_height="38dp"
+        android:layout_marginBottom="32dp"
+        android:queryHint="@string/add_friends"
+        app:layout_constraintBottom_toTopOf="@+id/currentConversations"
+        app:layout_constraintEnd_toEndOf="@+id/usersList"
+        app:layout_constraintStart_toStartOf="@+id/usersList"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="?attr/actionBarTheme"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/searchForFriends" />
+        app:layout_constraintTop_toTopOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -3,33 +3,44 @@
     package="aau.itcom.group_2.p5_secure_chatting">
 
     <application
+        android:name=".key_creation.App"
         android:allowBackup="true"
         android:fullBackupContent="@xml/backup_descriptor"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-        <activity android:name=".CreateAccountPage2Activity"/>
-        <activity android:name=".LoginActivity">
+        android:theme="@style/AppTheme"
+        >
+        <activity android:name=".adding_contacts.AddContactActivity"
+            android:parentActivityName=".ListUsersActivity"
+            android:windowSoftInputMode="adjustPan">
+        </activity>
+        <activity android:name=".create_account.CreateAccountPage2Activity" />
+        <activity android:name=".LoginActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
+            android:name=".create_account.CreateAccountActivity"
+            android:parentActivityName=".LoginActivity"
+            />
+        <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
-
                 <action android:name="android.intent.action.VIEW" />
             </intent-filter>
         </activity>
-        <activity android:name=".CreateAccountActivity"
-            android:parentActivityName=".LoginActivity"/>
-        <activity android:name=".MainActivity"/>
-        <activity android:name=".ChatActivity"
-            android:parentActivityName=".ListUsersActivity"/>
-        <activity android:name=".ListUsersActivity"
-            android:parentActivityName=".LoginActivity">
+        <activity
+            android:name=".chatting.ChatActivity"
+            android:parentActivityName=".ListUsersActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustPan">
+        </activity>
 
-
-
+        <activity
+            android:name=".ListUsersActivity"
+            android:theme="@style/AppTheme.NoActionBar">
         </activity>
     </application>
 

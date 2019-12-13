@@ -1,5 +1,6 @@
-package aau.itcom.group_2.p5_secure_chatting;
+package aau.itcom.group_2.p5_secure_chatting.create_account;
 
+import aau.itcom.group_2.p5_secure_chatting.R;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -7,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -62,7 +62,7 @@ public class CreateAccountActivity extends AppCompatActivity {
         emailNotValidToast = Toast.makeText(context, emailNotValid, toastDuration);
 
 
-        if(firstName.equals("") || lastName.equals("") || email.equals("") || phoneNumber.equals("")) {
+        if(firstName.equals("") || lastName.equals("") || email.equals("")) {
             missingInfoToast.show();
         } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             // Does not check if the email exist. Only the format example@123.aaa

@@ -1,5 +1,6 @@
 package aau.itcom.group_2.p5_secure_chatting;
 
+import aau.itcom.group_2.p5_secure_chatting.create_account.CreateAccountActivity;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,7 +10,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -49,9 +49,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        ActionBar actionBar = getSupportActionBar();
-        assert actionBar != null;
-        actionBar.setTitle("LoginActivity");
+
 
         context = getApplicationContext();
         intent = getIntent();
@@ -121,8 +119,6 @@ public class LoginActivity extends AppCompatActivity {
                             //password = findViewById(R.id.editText_passwordLogin);
                             //user = editTextPhoneOrEmail.getText().toString();
                             pass = editTextPassword.getText().toString();
-                            UserDetails.userId = user;
-                            UserDetails.password = pass;
                             startActivity(intentListUser);
                         } else {
                             // If sign in fails, display a message to the user.

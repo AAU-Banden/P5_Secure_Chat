@@ -4,11 +4,6 @@
     tools:context="aau.itcom.group_2.p5_secure_chatting.ListUsersActivity">
 
 
-    <item
-        android:icon="@drawable/ic_add_black_24dp"
-        android:id="@+id/add_contact"
-        app:showAsAction="always"
-        android:title="@string/add_contact" />
 
 
 </menu>

@@ -1,4 +1,9 @@
-package aau.itcom.group_2.p5_secure_chatting;
+package aau.itcom.group_2.p5_secure_chatting.create_account;
+
+import java.util.List;
+
+import aau.itcom.group_2.p5_secure_chatting.adding_contacts.Contact;
+import aau.itcom.group_2.p5_secure_chatting.adding_contacts.ContactRequest;
 
 public class User {
     private String name;
@@ -8,9 +13,12 @@ public class User {
     private String password;
     private String ID;
     private boolean isLoggedIn;
+    private ContactRequest contactRequest;
+    private List<Contact> contacts;
 
 
-
+    public User() {
+    }
 
     public User(String name, String lastName, String email, String phoneNumber, String password, boolean isLoggedIn, String ID) {
         this.name = name;
@@ -22,6 +30,36 @@ public class User {
         this.ID = ID;
     }
 
+
+
+    public User(String name, String lastName, String email, String phoneNumber, String password,
+                boolean isLoggedIn, String ID, ContactRequest contactRequest, List<Contact> contacts) {
+        this.name = name;
+        this.lastName = lastName;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.password = password;
+        this.isLoggedIn = isLoggedIn;
+        this.ID = ID;
+        this.contactRequest = contactRequest;
+        this.contacts = contacts;
+
+    }
+    public List<Contact> getContacts() {
+        return contacts;
+    }
+
+    public void setContacts(List<Contact> contacts) {
+        this.contacts = contacts;
+    }
+
+    public ContactRequest getContactRequest() {
+        return contactRequest;
+    }
+
+    public void setContactRequest(ContactRequest contactRequest) {
+        this.contactRequest = contactRequest;
+    }
 
     public String getName() {
         return name;
