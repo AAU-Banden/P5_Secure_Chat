@@ -334,6 +334,7 @@ public class ChatActivity extends AppCompatActivity {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         cipher.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec);
         byte[] cipherText = cipher.doFinal(byteMessage);
+        //test
 
         return new String(cipherText);
     }
