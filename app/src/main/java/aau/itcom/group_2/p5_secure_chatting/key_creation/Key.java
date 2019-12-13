@@ -2,8 +2,13 @@ package aau.itcom.group_2.p5_secure_chatting.key_creation;
 
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
+import android.util.Base64;
+import android.util.Log;
+
+import com.fasterxml.jackson.databind.ser.Serializers;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -16,19 +21,25 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
+import java.security.UnrecoverableEntryException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.spec.ECGenParameterSpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
 
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import androidx.room.Entity;
@@ -42,6 +53,7 @@ public class Key {
     private String keyName;
     private byte[] bytes;
     private String algorithm;
+    private byte[] iv;
 
 
 
@@ -50,10 +62,11 @@ public class Key {
     }
 
     @Ignore
-    public Key(byte[] bytes, String algorithm, String keyName) {
+    public Key(byte[] bytes, String algorithm, String keyName, byte[] iv) {
         this.bytes = bytes;
         this.algorithm = algorithm;
         this.keyName = keyName;
+        this.iv = iv;
     }
 
     static{
@@ -64,7 +77,7 @@ public class Key {
     @Ignore
     private final static String ECDH_alias = "ECDH_alias";
     @Ignore
-    private final static String RSA_alias = "RSA_alias";
+    private final static String AES_alias = "AES_alias";
 
     public KeyPair createECDHKeyPair() throws InvalidAlgorithmParameterException, NoSuchProviderException, NoSuchAlgorithmException {
         /**
@@ -77,114 +90,83 @@ public class Key {
 
     }
 
-    public void createRSAKeyPairInAndroidKeyStore () throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException, UnrecoverableKeyException, CertificateException, KeyStoreException, IOException {
+    public void createAESKeyInAndroidKeyStore () throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException, UnrecoverableKeyException, CertificateException, KeyStoreException, IOException {
         /**
          * Generates diffie hellman EC keys
          */
 
-        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA, "AndroidKeyStore");
-        keyPairGenerator.initialize(new KeyGenParameterSpec.Builder(
-                RSA_alias,
-                KeyProperties.PURPOSE_DECRYPT | KeyProperties.PURPOSE_ENCRYPT)//Purpose is to wrap other keys that are stored in the localdatabase
-                //.setAlgorithmParameterSpec(new ECParameterSpec)
-                .setDigests(KeyProperties.DIGEST_SHA256,  // private key is only authorized to use either SHA256 or SHA512 for signing
-                        KeyProperties.DIGEST_SHA512)
-                // Only permit the private key to be used if the user authenticated
-                // within the last five minutes.
-                //.setUserAuthenticationRequired(true) // Authentication is required - max five minutes before signing can happen
-                //.setUserAuthenticationValidityDurationSeconds(5 * 60)
-                .build()); // key length
-        KeyPair keyPair = keyPairGenerator.generateKeyPair();
+        KeyGenerator keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
+        keyGenerator.init(new KeyGenParameterSpec.Builder(AES_alias,
+                KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
+                .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+                .setRandomizedEncryptionRequired(false)
+                .build());
+        SecretKey secretKey = keyGenerator.generateKey();
 
-        // Signing the private key using ECDSA
-        //Signature signature = Signature.getInstance("SHA256withECDSA");
-        //signature.initSign(keyPair.getPrivate());
+        Log.i(TAG, "AES KEY: " + String.valueOf(secretKey));
 
     }
 
-    public byte[] encryptPublicKeyWithRSA (byte[] publicKeyBytes) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+    private SecretKey getAESKeyFromAKS() throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableEntryException {
         KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
         keyStore.load(null);
-        PublicKey publicKeyFromKeyStore = keyStore.getCertificate(RSA_alias).getPublicKey();
 
+        KeyStore.SecretKeyEntry secretKeyEntry = (KeyStore.SecretKeyEntry) keyStore.getEntry(AES_alias, null);
 
-        Cipher cipher = Cipher.getInstance("RSA");
-        cipher.init(Cipher.ENCRYPT_MODE, publicKeyFromKeyStore);
+        return secretKeyEntry.getSecretKey();
 
-        return cipher.doFinal(publicKeyBytes);
     }
 
-    public PublicKey decryptPublicKeyWithRSA (byte[] key, String algorithm) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableKeyException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, NoSuchProviderException, InvalidKeySpecException {
-        KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
-        keyStore.load(null);
-        PrivateKey privateKey = (PrivateKey) keyStore.getKey(RSA_alias, null);
+    public Object[] encryptKeyWithAES (byte[] keyBytes) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, UnrecoverableEntryException, InvalidAlgorithmParameterException {
+        SecretKey secretKey = getAESKeyFromAKS();
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
 
-        Cipher cipher = Cipher.getInstance("RSA");
-        cipher.init(Cipher.DECRYPT_MODE, privateKey);
+        return new Object[]{cipher.doFinal(keyBytes), cipher.getIV()};
 
+    }
+
+    public PublicKey decryptPublicKeyWithAES (byte[] key, String algorithm, GCMParameterSpec gcmParameterSpec) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableEntryException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, NoSuchProviderException, InvalidKeySpecException, InvalidAlgorithmParameterException {
+        SecretKey secretKey = getAESKeyFromAKS();
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmParameterSpec);
 
         return KeyFactory.getInstance(algorithm).generatePublic(new X509EncodedKeySpec(cipher.doFinal(key))); // generating public key.
 
     }
-    public String decryptPublicKeyWithRSAToString(byte[] key, String algorithm) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableKeyException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-        KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
-        keyStore.load(null);
-        PrivateKey privateKey = (PrivateKey) keyStore.getKey(RSA_alias, null);
 
-        Cipher cipher = Cipher.getInstance("RSA");
-        cipher.init(Cipher.DECRYPT_MODE, privateKey);
+    public String decryptPublicKeyWithAESToString(byte[] key, GCMParameterSpec gcmParameterSpec) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableEntryException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException {
+        SecretKey secretKey = getAESKeyFromAKS();
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmParameterSpec);
+        byte[] cipherText = cipher.doFinal(key);
 
 
-        return new String(cipher.doFinal(key)); // generating public key.
+        Log.i(TAG, "DECRYPTED PBKEY: " + Arrays.toString(cipherText));
+
+        return Base64.encodeToString(cipherText, Base64.DEFAULT); // We encode it to string, when it is received it needs to be decoded.
     }
 
-    public byte[] encryptPrivateKeyWithRSA (byte[] privateKeyByte) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-        KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
-        keyStore.load(null);
-        PublicKey publicKeyFromKeyStore = keyStore.getCertificate(RSA_alias).getPublicKey();
 
+    public PrivateKey decryptPrivateKeyWithAES (byte[] key, String algorithm, GCMParameterSpec gcmParameterSpec) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableEntryException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, NoSuchProviderException, InvalidKeySpecException, InvalidAlgorithmParameterException {
+        SecretKey secretKey = getAESKeyFromAKS();
 
-        Cipher cipher = Cipher.getInstance("RSA");
-        cipher.init(Cipher.ENCRYPT_MODE, publicKeyFromKeyStore);
-
-        return cipher.doFinal(privateKeyByte);
-    }
-
-    public PrivateKey decryptPrivateKeyWithRSA (byte[] key, String algorithm) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableKeyException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, NoSuchProviderException, InvalidKeySpecException {
-        KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
-        keyStore.load(null);
-        PrivateKey privateKey = (PrivateKey) keyStore.getKey(RSA_alias, null);
-
-        Cipher cipher = Cipher.getInstance("RSA");
-        cipher.init(Cipher.DECRYPT_MODE, privateKey);
-
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmParameterSpec);
 
         return KeyFactory.getInstance(algorithm).generatePrivate(new PKCS8EncodedKeySpec(cipher.doFinal(key))); // generating private key.
 
     }
 
-    public byte[] encryptSecretKeyWithRSA (SecretKey secretKey) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-        KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
-        keyStore.load(null);
-        PublicKey publicKeyFromKeyStore = (PublicKey) keyStore.getCertificate(RSA_alias);
+    public SecretKey decryptSecretKeyWithAES (byte[] key, String algorithm, GCMParameterSpec gcmParameterSpec) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableEntryException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, NoSuchProviderException, InvalidKeySpecException, InvalidAlgorithmParameterException {
+        SecretKey secretKey = getAESKeyFromAKS();
+
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmParameterSpec);
 
 
-        Cipher cipher = Cipher.getInstance("RSA");
-        cipher.init(Cipher.ENCRYPT_MODE, publicKeyFromKeyStore);
-
-        return cipher.doFinal(secretKey.getEncoded());
-    }
-
-    public SecretKey decryptSecretKeyWithRSA (byte[] key, String algorithm) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableKeyException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, NoSuchProviderException, InvalidKeySpecException {
-        KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
-        keyStore.load(null);
-        PrivateKey privateKey = (PrivateKey) keyStore.getKey(RSA_alias, null);
-
-        Cipher cipher = Cipher.getInstance("RSA");
-        cipher.init(Cipher.DECRYPT_MODE, privateKey);
-
-
-        return new SecretKeySpec(key, 0, key.length, algorithm); // generating secret key.
+        return new SecretKeySpec(key, 0, 16, algorithm); // generating secret key.
 
     }
 
@@ -222,4 +204,11 @@ public class Key {
         this.bytes = bytes;
     }
 
+    public byte[] getIv() {
+        return iv;
+    }
+
+    public void setIv(byte[] iv) {
+        this.iv = iv;
+    }
 }

@@ -22,14 +22,13 @@ public class Contact {
     private String id;
 
     @Ignore
-    public Contact(String name, String lastName, String email, String phoneNumber, String id, String publicKey, byte[] iv) {
+    public Contact(String name, String lastName, String email, String phoneNumber, String id, String publicKey) {
         this.name = name;
         this.lastName = lastName;
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.id = id;
         this.publicKey = publicKey;
-        this.iv = iv;
     }
 
     public Contact(){

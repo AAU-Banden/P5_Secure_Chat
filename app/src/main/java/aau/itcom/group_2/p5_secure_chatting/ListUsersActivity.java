@@ -27,6 +27,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyStoreException;
@@ -152,7 +153,7 @@ public class ListUsersActivity extends AppCompatActivity {
 
                         try {
                             AddContactActivity.createSharedKey(contact);
-                        } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableEntryException | InvalidKeySpecException | InvalidKeyException | NoSuchProviderException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException e) {
+                        } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableEntryException | InvalidKeySpecException | InvalidKeyException | NoSuchProviderException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException e) {
                             e.printStackTrace();
                         }
                     }

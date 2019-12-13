@@ -9,7 +9,7 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-@Database(entities = {Contact.class, Message.class, Key.class}, version = 2)
+@Database(entities = {Contact.class, Message.class, Key.class}, version = 3)
 public abstract class AppDatabase extends RoomDatabase {
     final static String DB_NAME = "app_database";
     private static AppDatabase instance;

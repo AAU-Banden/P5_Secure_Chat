@@ -34,10 +34,12 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.UnrecoverableEntryException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -47,6 +49,7 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 
 import aau.itcom.group_2.p5_secure_chatting.R;
@@ -152,9 +155,9 @@ public class ChatActivity extends AppCompatActivity {
         });
         for (Message message : messages) {
             if (!message.getIdOfSender().equals(currentUserId)) {
-                addMessageBox(message.getMessage(), 1);
-            } else {
                 addMessageBox(message.getMessage(), 2);
+            } else {
+                addMessageBox(message.getMessage(), 1);
             }
         }
         pd.dismiss();
@@ -184,9 +187,9 @@ public class ChatActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String messageText = messageArea.getText().toString();
                 try {
-                    messageText = encryptDH(clickedUserId, messageText, clickedUserIv);
+                    messageText = encryptDH(clickedUserId, messageText);
                     Log.i(TAG, "Encrypted message: " + messageText);
-                } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableKeyException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchProviderException | InvalidAlgorithmParameterException | InvalidKeySpecException e) {
+                } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchProviderException | InvalidAlgorithmParameterException | InvalidKeySpecException | UnrecoverableEntryException e) {
                     e.printStackTrace();
                 }
 
@@ -203,7 +206,7 @@ public class ChatActivity extends AppCompatActivity {
                     messageDAO.insertMessage(message);
                     // database.getReference().child("users").child(clickedUserId).child("contacts").child(currentUserId).child("chat").child(message.getTime()).setValue(message);
 
-                    addMessageBox(message.getMessage(), 2);
+                    addMessageBox(messageArea.getText().toString(), 2);
 
                     messageArea.setText("");
 
@@ -226,9 +229,9 @@ public class ChatActivity extends AppCompatActivity {
                 if (message != null) {
                     try {
                         Log.i(TAG, "Encrypted message: " + message.getMessage());
-                        message.setMessage(decryptDH(clickedUserId, message.getMessage(), clickedUserIv));
+                        message.setMessage(decryptDH(clickedUserId, message.getMessage()));
                         Log.i(TAG, "Decrypted message: " + message.getMessage());
-                    } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableKeyException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchProviderException | InvalidAlgorithmParameterException | InvalidKeySpecException e) {
+                    } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchProviderException | InvalidAlgorithmParameterException | InvalidKeySpecException | UnrecoverableEntryException e) {
                         e.printStackTrace();
                     }
 
@@ -296,13 +299,14 @@ public class ChatActivity extends AppCompatActivity {
         scrollView.fullScroll(View.FOCUS_DOWN);
     }
 
-    public String encryptDH(String contactId, String message, byte[] contactIv) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableKeyException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, NoSuchProviderException, InvalidKeySpecException, InvalidAlgorithmParameterException {
+    public String encryptDH(String contactId, String message) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableEntryException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, NoSuchProviderException, InvalidKeySpecException, InvalidAlgorithmParameterException {
         Key keyFromDB = keyDAO.loadKeyWithKeyName(contactId);
+        Log.i(TAG,"IS SHARED KEY FROM DB NULL???? " + Arrays.toString(keyFromDB.getBytes()));
         Key key = new Key();
-        SecretKey secretKey = key.decryptSecretKeyWithRSA(keyFromDB.getBytes(), keyFromDB.getAlgorithm());
+        SecretKey secretKey = key.decryptSecretKeyWithAES(keyFromDB.getBytes(), keyFromDB.getAlgorithm(), new GCMParameterSpec(128, keyFromDB.getIv()));
 
 
-        IvParameterSpec ivParameterSpec = new IvParameterSpec(contactIv);
+        IvParameterSpec ivParameterSpec = new IvParameterSpec(new byte[] {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16}); // TEST iv skal ikke være hardcoded men randomized
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec);
 
@@ -312,12 +316,13 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
-    public String decryptDH(String contactId, String message, byte[] contactIv) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableKeyException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, NoSuchProviderException, InvalidKeySpecException, InvalidAlgorithmParameterException {
+    public String decryptDH(String contactId, String message) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableEntryException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, NoSuchProviderException, InvalidKeySpecException, InvalidAlgorithmParameterException {
         Key keyFromDB = keyDAO.loadKeyWithKeyName(contactId);
         Key key = new Key();
-        SecretKey keyStoreKey = key.decryptSecretKeyWithRSA(keyFromDB.getBytes(), keyFromDB.getAlgorithm());
+        SecretKey keyStoreKey = key.decryptSecretKeyWithAES(keyFromDB.getBytes(), keyFromDB.getAlgorithm(), new GCMParameterSpec(128, keyFromDB.getIv()));
 
-        IvParameterSpec ivParameterSpec = new IvParameterSpec(contactIv);
+
+        IvParameterSpec ivParameterSpec = new IvParameterSpec(new byte[] {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16});
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         cipher.init(Cipher.DECRYPT_MODE, keyStoreKey, ivParameterSpec);
         byte[] cipherText = cipher.doFinal(message.getBytes("UTF-8"));
