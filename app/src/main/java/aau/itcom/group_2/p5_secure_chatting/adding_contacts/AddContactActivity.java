@@ -375,7 +375,7 @@ public class AddContactActivity extends AppCompatActivity {
 
 
 
-        Log.i(TAG, "DECODED KEY FROM CONTACT" + Arrays.toString(decodedKey));
+        Log.i(TAG, "666DECODED KEY FROM CONTACT" + Arrays.toString(decodedKey));
 
         X509EncodedKeySpec X509publicKey = new X509EncodedKeySpec(decodedKey);
         KeyFactory keyFactory = KeyFactory.getInstance("ECDH", "SC");
@@ -392,6 +392,8 @@ public class AddContactActivity extends AppCompatActivity {
 
 
         SecretKey secretKey = keyAgreement.generateSecret("AES");
+
+        Log.i(TAG, "SECRET: " + Arrays.toString(secretKey.getEncoded()));
 
 
         //putting key into roomdatabase

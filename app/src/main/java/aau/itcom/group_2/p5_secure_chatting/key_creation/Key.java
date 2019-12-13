@@ -143,7 +143,7 @@ public class Key {
         byte[] cipherText = cipher.doFinal(key);
 
 
-        Log.i(TAG, "DECRYPTED PBKEY: " + Arrays.toString(cipherText));
+        Log.i(TAG, "666DECRYPTED PBKEY: " + Arrays.toString(cipherText));
 
         return Base64.encodeToString(cipherText, Base64.DEFAULT); // We encode it to string, when it is received it needs to be decoded.
     }
@@ -166,7 +166,8 @@ public class Key {
         cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmParameterSpec);
 
 
-        return new SecretKeySpec(key, 0, 16, algorithm); // generating secret key.
+
+        return new SecretKeySpec(cipher.doFinal(key), 0, 16, algorithm); // generating secret key.
 
     }
 

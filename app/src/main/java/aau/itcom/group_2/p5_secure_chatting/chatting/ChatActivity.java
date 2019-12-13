@@ -312,20 +312,28 @@ public class ChatActivity extends AppCompatActivity {
 
         byte[] cipherText = cipher.doFinal(message.getBytes("UTF-8"));
 
+        //Log.i(TAG, "TESTBINS " + decryptDH(contactId, Base64.encodeToString(cipherText, Base64.DEFAULT)));
+
         return Base64.encodeToString(cipherText, Base64.DEFAULT);
 
     }
 
     public String decryptDH(String contactId, String message) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableEntryException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, NoSuchProviderException, InvalidKeySpecException, InvalidAlgorithmParameterException {
         Key keyFromDB = keyDAO.loadKeyWithKeyName(contactId);
+        Log.i(TAG,"IS SHARED KEY FROM DB NULL???? " + Arrays.toString(keyFromDB.getBytes()));
         Key key = new Key();
-        SecretKey keyStoreKey = key.decryptSecretKeyWithAES(keyFromDB.getBytes(), keyFromDB.getAlgorithm(), new GCMParameterSpec(128, keyFromDB.getIv()));
+        SecretKey secretKey = key.decryptSecretKeyWithAES(keyFromDB.getBytes(), keyFromDB.getAlgorithm(), new GCMParameterSpec(128, keyFromDB.getIv()));
+        Log.i(TAG, "SecretKey" + Arrays.toString(secretKey.getEncoded()));
 
+        Log.i(TAG,"message: " + message);
+        byte[] byteMessage = Base64.decode(message, Base64.DEFAULT);
+
+       // Log.i(TAG, "decode: " + new String(byteMessage));
 
         IvParameterSpec ivParameterSpec = new IvParameterSpec(new byte[] {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16});
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipher.init(Cipher.DECRYPT_MODE, keyStoreKey, ivParameterSpec);
-        byte[] cipherText = cipher.doFinal(message.getBytes("UTF-8"));
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec);
+        byte[] cipherText = cipher.doFinal(byteMessage);
 
         return new String(cipherText);
     }
