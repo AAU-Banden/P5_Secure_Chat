@@ -372,29 +372,20 @@ public class AddContactActivity extends AppCompatActivity {
         Key key = new Key();
         String keyString = contact.getPublicKey();
         byte[] decodedKey = Base64.decode(keyString.getBytes(), Base64.DEFAULT);
-
-
-
-        Log.i(TAG, "666DECODED KEY FROM CONTACT" + Arrays.toString(decodedKey));
-
         X509EncodedKeySpec X509publicKey = new X509EncodedKeySpec(decodedKey);
         KeyFactory keyFactory = KeyFactory.getInstance("ECDH", "SC");
         PublicKey contactPublicKey = keyFactory.generatePublic(X509publicKey);
 
         //private key from user:
         Key privateKeyFromRoom = keyDAO.loadKeyWithKeyName(pvECDHKeyName);
-        PrivateKey privateKey = privateKeyFromRoom.decryptPrivateKeyWithAES(privateKeyFromRoom.getBytes(), privateKeyFromRoom.getAlgorithm(), new GCMParameterSpec(128, privateKeyFromRoom.getIv()));
-
+        PrivateKey privateKey = privateKeyFromRoom.decryptPrivateKeyWithAES(privateKeyFromRoom.getBytes(), privateKeyFromRoom.getAlgorithm(),
+                new GCMParameterSpec(128, privateKeyFromRoom.getIv()));
 
         KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH", "SC");
         keyAgreement.init(privateKey);
         keyAgreement.doPhase(contactPublicKey, true);
 
-
         SecretKey secretKey = keyAgreement.generateSecret("AES");
-
-        Log.i(TAG, "SECRET: " + Arrays.toString(secretKey.getEncoded()));
-
 
         //putting key into roomdatabase
         Object[] encryptedKey = key.encryptKeyWithAES(secretKey.getEncoded());

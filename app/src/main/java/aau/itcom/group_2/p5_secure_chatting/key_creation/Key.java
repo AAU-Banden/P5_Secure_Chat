@@ -83,7 +83,6 @@ public class Key {
         /**
          * Generating keys using SpongeCastle as provider and with general parameters for the ECDH key - "secp256r1" (p=256 bit prime)
          */
-
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("ECDH", "SC");
         keyPairGenerator.initialize(new ECGenParameterSpec("secp256r1"));
         return keyPairGenerator.generateKeyPair();
@@ -92,9 +91,8 @@ public class Key {
 
     public void createAESKeyInAndroidKeyStore () throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException, UnrecoverableKeyException, CertificateException, KeyStoreException, IOException {
         /**
-         * Generates diffie hellman EC keys
+         * AES key generation
          */
-
         KeyGenerator keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
         keyGenerator.init(new KeyGenParameterSpec.Builder(AES_alias,
                 KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
@@ -122,7 +120,6 @@ public class Key {
         SecretKey secretKey = getAESKeyFromAKS();
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-
         return new Object[]{cipher.doFinal(keyBytes), cipher.getIV()};
 
     }
@@ -151,7 +148,6 @@ public class Key {
 
     public PrivateKey decryptPrivateKeyWithAES (byte[] key, String algorithm, GCMParameterSpec gcmParameterSpec) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableEntryException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, NoSuchProviderException, InvalidKeySpecException, InvalidAlgorithmParameterException {
         SecretKey secretKey = getAESKeyFromAKS();
-
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmParameterSpec);
 

@@ -198,16 +198,16 @@ public class ChatActivity extends AppCompatActivity {
                 }
 
 
-                if(!messageText.equals("")){
-                    message = new Message(messageArea.getText().toString(), null, currentUserId);
-
+                if(!messageArea.getText().toString().equals("")){
+                    message = new Message(messageText, null, currentUserId);
+                    Message messageToDatabase = new Message(messageArea.getText().toString(), null, currentUserId);
 
                     /**
                      * Sending message to server and storing it locally.
                      */
                     database.getReference().child("chat").child(currentUserId+clickedUserId).child(message.getId()).setValue(message);
 
-                    messageDAO.insertMessage(message);
+                    messageDAO.insertMessage(messageToDatabase);
                     // database.getReference().child("users").child(clickedUserId).child("contacts").child(currentUserId).child("chat").child(message.getTime()).setValue(message);
 
                     addMessageBox(messageArea.getText().toString(), 2);
@@ -225,11 +225,6 @@ public class ChatActivity extends AppCompatActivity {
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, String s) {
                 // Henter beskeder og putter dem i de rigtige messageBoxe
                 message = dataSnapshot.getValue(Message.class);
-
-
-
-
-
                 if (message != null) {
                     try {
                         Log.i(TAG, "Encrypted message: " + message.getMessage());
@@ -307,17 +302,15 @@ public class ChatActivity extends AppCompatActivity {
         Key keyFromDB = keyDAO.loadKeyWithKeyName(contactId);
         Log.i(TAG,"IS SHARED KEY FROM DB NULL???? " + Arrays.toString(keyFromDB.getBytes()));
         Key key = new Key();
-        SecretKey secretKey = key.decryptSecretKeyWithAES(keyFromDB.getBytes(), keyFromDB.getAlgorithm(), new GCMParameterSpec(128, keyFromDB.getIv()));
+        SecretKey secretKey = key.decryptSecretKeyWithAES(keyFromDB.getBytes(), keyFromDB.getAlgorithm(),
+                new GCMParameterSpec(128, keyFromDB.getIv()));
 
-
-        IvParameterSpec ivParameterSpec = new IvParameterSpec(new byte[] {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16}); // TEST iv skal ikke være hardcoded men randomized
+        //IV should not be hardcoded but randomized and sent to the other user for decryption
+        IvParameterSpec ivParameterSpec = new IvParameterSpec(new byte[] {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16});
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec);
 
         byte[] cipherText = cipher.doFinal(message.getBytes("UTF-8"));
-
-        //Log.i(TAG, "TESTBINS " + decryptDH(contactId, Base64.encodeToString(cipherText, Base64.DEFAULT)));
-
         return Base64.encodeToString(cipherText, Base64.DEFAULT);
 
     }
@@ -326,20 +319,15 @@ public class ChatActivity extends AppCompatActivity {
         Key keyFromDB = keyDAO.loadKeyWithKeyName(contactId);
         Log.i(TAG,"IS SHARED KEY FROM DB NULL???? " + Arrays.toString(keyFromDB.getBytes()));
         Key key = new Key();
-        SecretKey secretKey = key.decryptSecretKeyWithAES(keyFromDB.getBytes(), keyFromDB.getAlgorithm(), new GCMParameterSpec(128, keyFromDB.getIv()));
-        Log.i(TAG, "SecretKey" + Arrays.toString(secretKey.getEncoded()));
+        SecretKey secretKey = key.decryptSecretKeyWithAES(keyFromDB.getBytes(), keyFromDB.getAlgorithm(),
+                new GCMParameterSpec(128, keyFromDB.getIv()));
 
-        Log.i(TAG,"message: " + message);
         byte[] byteMessage = Base64.decode(message, Base64.DEFAULT);
-
-       // Log.i(TAG, "decode: " + new String(byteMessage));
-
         IvParameterSpec ivParameterSpec = new IvParameterSpec(new byte[] {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16});
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         cipher.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec);
-        byte[] cipherText = cipher.doFinal(byteMessage);
-        //test
 
+        byte[] cipherText = cipher.doFinal(byteMessage);
         return new String(cipherText);
     }
 }

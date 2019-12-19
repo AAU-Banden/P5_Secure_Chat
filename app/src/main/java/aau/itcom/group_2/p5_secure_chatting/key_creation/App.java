@@ -56,11 +56,8 @@ public class App extends Application {
                 key.createAESKeyInAndroidKeyStore();
 
                 KeyPair keyPair = key.createECDHKeyPair();
-
-
                 Log.i(TAG, "Private ECDH: "+ Arrays.toString(keyPair.getPrivate().getEncoded()));
                 Log.i(TAG, "Public ECDH: "+ Arrays.toString(keyPair.getPublic().getEncoded()));
-
 
                 Object[] encryptedECDHPvKey = key.encryptKeyWithAES(keyPair.getPrivate().getEncoded());
                 Object[] encryptedECDHPbKey = key.encryptKeyWithAES(keyPair.getPublic().getEncoded());
@@ -69,14 +66,11 @@ public class App extends Application {
                 byte[] privateKeyBytes = (byte[]) encryptedECDHPvKey[0];
                 byte[] ivPvFromEncryption = (byte[]) encryptedECDHPvKey[1];
 
-
                 Log.i(TAG, "Private ECDH Encrypted: "+ Arrays.toString(privateKeyBytes));
                 Log.i(TAG, "Public ECDH Encrypted: "+ Arrays.toString(publicKeyBytes));
 
-
                 Key keyECDHPvKey = new Key(privateKeyBytes, keyPair.getPrivate().getAlgorithm(), pvKeyName, ivPvFromEncryption);
                 Key keyECDHPbKey = new Key(publicKeyBytes, keyPair.getPublic().getAlgorithm(), pbKeyName, ivPbFromEncryption);
-
                 keyDAO.insertKey(keyECDHPvKey);
                 keyDAO.insertKey(keyECDHPbKey);
 

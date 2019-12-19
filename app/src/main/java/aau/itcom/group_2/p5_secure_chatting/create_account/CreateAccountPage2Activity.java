@@ -146,7 +146,7 @@ public class CreateAccountPage2Activity extends AppCompatActivity {
     private void onAuthSuccess(FirebaseUser firebaseUser) {
         // Write new user
         id = firebaseUser.getUid();
-        user = new User (firstName, lastName, email , phoneNumber, passwordStr, false, id);
+        user = new User (firstName, lastName, email , phoneNumber, false, id);
         databaseReference.child("users").child(id).setValue(user);
         // Go to MainActivity
         intent = new Intent (this, LoginActivity.class);
